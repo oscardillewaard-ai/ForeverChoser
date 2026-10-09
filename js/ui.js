@@ -39,9 +39,15 @@ export function toast(msg) {
   toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
 }
 
+// Inline CSS-variabelen voor een class: --cc voor randen en balken, --ct voor tekst
+// (sommige class-kleuren zijn te donker als tekst op de donkere achtergrond).
+export function classVars(c) {
+  return `--cc:${c.color};--ct:${c.text}`;
+}
+
 export function classBadge(id, extra = '') {
   const c = classById[id];
-  return `<span class="badge class-badge ${extra}" style="--cc:${c.color}">${c.icon} ${esc(c.name)}</span>`;
+  return `<span class="badge class-badge ${extra}" style="${classVars(c)}">${c.icon} ${esc(c.name)}</span>`;
 }
 
 export function raceBadge(id) {
@@ -100,8 +106,17 @@ export function bindStars(root, onChange) {
   });
 }
 
+// Na het vervangen van de inhoud: focus op de nieuwe kop, zodat toetsenbord- en
+// screenreadergebruikers horen wat er veranderd is.
+export function focusHeading(root) {
+  const h = root.querySelector('h2, h1');
+  if (!h) return;
+  h.setAttribute('tabindex', '-1');
+  h.focus({ preventScroll: true });
+}
+
 export async function shareText(title, text) {
-  const url = location.href.split('#')[0];
+  const url = location.origin + location.pathname;
   if (navigator.share) {
     try {
       await navigator.share({ title, text, url });

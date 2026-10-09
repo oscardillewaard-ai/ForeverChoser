@@ -1,7 +1,7 @@
 import { CLASSES, classById } from '../data.js';
 import { getState, update } from '../store.js';
 import { duelScores } from '../scoring.js';
-import { bar, esc, shuffle } from '../ui.js';
+import { bar, classVars, esc, focusHeading, shuffle } from '../ui.js';
 
 const ROUNDS = 15;
 
@@ -35,12 +35,16 @@ export function renderDuel(root) {
   let round = 0;
   let wins = {};
   let apps = {};
+  let ties = {};
   let picks = [];
   let next = makeScheduler();
   let current = null;
+  let busy = false;
+  let timer = 0;
 
   function showRound() {
     current = next();
+    busy = false;
     root.innerHTML = `
       <div class="page-head">
         <a class="back" href="#/">← Start</a>
@@ -60,25 +64,30 @@ export function renderDuel(root) {
     `;
     root.querySelector('.duel').addEventListener('click', (e) => {
       const btn = e.target.closest('[data-side]');
-      if (!btn) return;
+      if (!btn || busy) return;
       btn.classList.add('chosen');
       choose(Number(btn.dataset.side));
     });
     root.querySelector('[data-skip]').addEventListener('click', () => choose(null));
+    focusHeading(root);
   }
 
   function choose(side) {
+    if (busy) return;
+    busy = true;
     for (const p of current) apps[p.c] = (apps[p.c] || 0) + 1;
     if (side !== null) {
       const w = current[side];
       wins[w.c] = (wins[w.c] || 0) + 1;
       picks.push({ c: w.c, line: w.line });
+    } else {
+      for (const p of current) ties[p.c] = (ties[p.c] || 0) + 1;
     }
     round++;
-    setTimeout(() => {
+    timer = setTimeout(() => {
       if (round < ROUNDS) showRound();
       else {
-        update({ duel: { wins, apps, picks } });
+        update({ duel: { wins, apps, ties, picks } });
         showResult();
       }
     }, 200);
@@ -90,27 +99,38 @@ export function renderDuel(root) {
     const ranking = CLASSES.map((c) => c.id).sort((a, b) => scores[b] - scores[a] || (duel.wins[b] || 0) - (duel.wins[a] || 0));
     const best = classById[ranking[0]];
     const bestPicks = duel.picks.filter((p) => p.c === best.id);
+    const noSignal = Math.max(...Object.values(scores)) - Math.min(...Object.values(scores)) < 1e-9;
 
     root.innerHTML = `
       <div class="page-head">
         <a class="back" href="#/">← Start</a>
         <h1>⚖️ De onthulling</h1>
       </div>
-      <section class="card reveal" style="--cc:${best.color}">
-        <p class="eyebrow">Je koos het vaakst voor</p>
-        <div class="reveal-icon" aria-hidden="true">${best.icon}</div>
-        <h2 class="class-name">${esc(best.name)}</h2>
-        <p class="muted">${duel.wins[best.id] || 0} van de ${duel.apps[best.id] || 0} keer gekozen</p>
-        ${bestPicks.length ? `<ul class="quotes">${bestPicks.map((p) => `<li>“${esc(p.line)}”</li>`).join('')}</ul>` : ''}
-      </section>
+      ${
+        noSignal
+          ? `<section class="card reveal">
+              <p class="eyebrow">Geen duidelijke voorkeur</p>
+              <div class="reveal-icon" aria-hidden="true">🤷</div>
+              <h2 class="class-name">Alles even leuk</h2>
+              <p class="muted">Je sloeg de duels over of koos overal even vaak voor. Deze test telt daarom niet mee in je resultaat. Probeer het nog eens en kies telkens één kant.</p>
+            </section>`
+          : `<section class="card reveal" style="${classVars(best)}">
+              <p class="eyebrow">Je koos het vaakst voor</p>
+              <div class="reveal-icon" aria-hidden="true">${best.icon}</div>
+              <h2 class="class-name">${esc(best.name)}</h2>
+              <p class="muted">${duel.wins[best.id] || 0} van de ${duel.apps[best.id] || 0} keer gekozen</p>
+              ${bestPicks.length ? `<ul class="quotes">${bestPicks.map((p) => `<li>“${esc(p.line)}”</li>`).join('')}</ul>` : ''}
+            </section>`
+      }
       <section class="card">
-        <h3>Winstpercentage per class</h3>
+        <h3>Gekozen per class</h3>
+        <p class="muted small">"Allebei even leuk" telt als half gekozen voor beide.</p>
         <ol class="ranking">
           ${ranking
             .map((id) => {
               const c = classById[id];
               const pct = Math.round(scores[id] * 100);
-              return `<li><a href="#/gids/class/${id}" class="rank-row"><span class="rank-name" style="color:${c.color}">${c.icon} ${esc(c.name)}</span>${bar(pct, c.color)}<span class="rank-pct">${duel.wins[id] || 0}/${duel.apps[id] || 0}</span></a></li>`;
+              return `<li><a href="#/gids/class/${id}" class="rank-row"><span class="rank-name" style="color:${c.text}">${c.icon} ${esc(c.name)}</span>${bar(pct, c.color)}<span class="rank-pct">${duel.wins[id] || 0}/${duel.apps[id] || 0}</span></a></li>`;
             })
             .join('')}
         </ol>
@@ -124,12 +144,15 @@ export function renderDuel(root) {
       round = 0;
       wins = {};
       apps = {};
+      ties = {};
       picks = [];
       next = makeScheduler();
       showRound();
     });
+    focusHeading(root);
   }
 
   if (getState().duel) showResult();
   else showRound();
+  return () => clearTimeout(timer);
 }

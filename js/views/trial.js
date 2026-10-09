@@ -1,5 +1,5 @@
 import { getState, update } from '../store.js';
-import { bindStars, esc, rand, starsInput } from '../ui.js';
+import { bindStars, esc, focusHeading, rand, starsInput } from '../ui.js';
 
 const DURATION = 30000;
 const TICK = 100;
@@ -90,16 +90,26 @@ export function renderTrialGame(root, [kind]) {
       <button class="btn btn-primary btn-block" data-start>Start (30 seconden)</button>
     `;
     root.querySelector('[data-start]').addEventListener('click', play);
+    focusHeading(root);
+  }
+
+  // Tijdens het spel verdwijnt de navigatiebalk, zodat de speelknoppen op elk scherm passen.
+  function setInGame(on) {
+    document.body.classList.toggle('in-game', on);
   }
 
   function play() {
+    setInGame(true);
     root.innerHTML = `
-      <div class="page-head">
+      <div class="page-head game-head">
         <h1>${game.icon} ${game.title}</h1>
         <span class="timer" aria-live="off">30</span>
+        <a class="back stop" href="#/proefrit">✕ Stop</a>
       </div>
       <div class="arena"></div>
     `;
+    window.scrollTo(0, 0);
+    focusHeading(root);
     const timerEl = root.querySelector('.timer');
     stop = game.play(root.querySelector('.arena'), {
       onTime: (msLeft) => {
@@ -113,6 +123,7 @@ export function renderTrialGame(root, [kind]) {
   }
 
   function finish(result) {
+    setInGame(false);
     const prev = getState().trial[kind];
     root.innerHTML = `
       <div class="page-head">
@@ -147,10 +158,15 @@ export function renderTrialGame(root, [kind]) {
       location.hash = nextKind ? `#/proefrit/${nextKind}` : '#/proefrit';
     });
     root.querySelector('[data-again]').addEventListener('click', intro);
+    window.scrollTo(0, 0);
+    focusHeading(root);
   }
 
   intro();
-  return () => stop?.();
+  return () => {
+    stop?.();
+    setInGame(false);
+  };
 }
 
 // Gemeenschappelijke spellus: roept tick(elapsed, now) aan tot de tijd op is.
@@ -267,6 +283,7 @@ function healGame(arena, hooks) {
       f.classList.toggle('dead', p.hp <= 0);
     });
     manaEl.style.width = `${mana}%`;
+    groupBtn.classList.toggle('cooldown', mana < 26);
   }
 
   return loop(
@@ -299,7 +316,7 @@ function healGame(arena, hooks) {
       return {
         score: survivors,
         grade: survivors === 5 ? 'Perfect: niemand gevallen' : survivors >= 3 ? 'Goed gedaan' : 'Zware dungeon',
-        headline: `${survivors} van de 5 overleefden`,
+        headline: `${survivors} van de 5 ${survivors === 1 ? 'overleefde' : 'overleefden'}`,
         detail: `${Math.round(healed)} HP geheeld, ${ohPct}% overheal, gemiddeld ${avg}% health over.`,
       };
     },
@@ -374,7 +391,8 @@ function tankGame(arena, hooks) {
       el.querySelector('.mob-target').textContent = loose ? `→ ${allies[m.target].i} ${allies[m.target].n}` : '→ 🛡️ Jij';
     });
     const cd = Math.max(0, clapReady - now);
-    clapBtn.disabled = cd > 0;
+    clapBtn.setAttribute('aria-disabled', String(cd > 0));
+    clapBtn.classList.toggle('cooldown', cd > 0);
     clapBtn.querySelector('small').textContent = cd > 0 ? `${Math.ceil(cd / 1000)} s` : 'alle vijanden';
   }
 
@@ -420,7 +438,7 @@ function tankGame(arena, hooks) {
         score: pct,
         grade: pct >= 85 ? 'Rotsvast' : pct >= 65 ? 'Degelijke tank' : 'Chaos in de dungeon',
         headline: `${pct}% van de tijd hield je de aandacht vast`,
-        detail: `${living} van de 3 groepsleden overleefden.`,
+        detail: `${living} van de 3 groepsleden ${living === 1 ? 'overleefde' : 'overleefden'}.`,
       };
     },
   );
@@ -447,10 +465,10 @@ function dpsGame(arena, hooks) {
       <span class="dmg-total">0</span>
       <span class="muted small">schade</span>
       <div class="floaters" aria-hidden="true"></div>
-    </div>
-    <div class="fire" hidden>
-      <span>🔥 Vuur onder je voeten!</span>
-      <button class="btn btn-danger" data-move>🏃 Stap weg</button>
+      <div class="fire" hidden>
+        <span>🔥 Vuur onder je voeten!</span>
+        <button class="btn btn-danger" data-move>🏃 Stap weg</button>
+      </div>
     </div>
     <div class="abilities">
       <button class="ability" data-a="hit">🗡️<span>Aanval</span><small>12</small></button>
@@ -542,6 +560,7 @@ function dpsGame(arena, hooks) {
       if (!fireDeadline && elapsed > fireAt) {
         fireDeadline = now + 1800;
         fireEl.hidden = false;
+        eventEl.textContent = '🔥 Vuur! Stap weg!';
         fireAt = elapsed + rand(5500, 8000);
       }
       if (fireDeadline && now > fireDeadline) {

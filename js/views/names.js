@@ -5,15 +5,29 @@ import { esc, toast } from '../ui.js';
 
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
+// Geen beledigende of beladen namen, en geen bekende lore-namen (niet toegestaan op RP).
+const BLOCKED = /nazi|nazg|hitler|lul|kak|kut|pik|hoer|slet|fuck|shit|anus|sex/i;
+const LORE_NAMES = new Set(['zuljin', 'voljin', 'senjin', 'muradin', 'shandris', 'draka', 'gromash', 'nazgrim', 'thrall', 'jaina', 'garrosh', 'sylvanas']);
+
+function acceptable(name) {
+  // WoW-namen: 2-12 letters, geen drie dezelfde letters achter elkaar.
+  return (
+    name.length >= 3 &&
+    name.length <= 12 &&
+    !/(.)\1\1/i.test(name) &&
+    !BLOCKED.test(name) &&
+    !LORE_NAMES.has(name.toLowerCase())
+  );
+}
+
 export function makeName(raceId) {
   const parts = NAME_PARTS[raceId];
-  for (let tries = 0; tries < 20; tries++) {
+  for (let tries = 0; tries < 50; tries++) {
     const raw = pick(parts.a) + (Math.random() < 0.3 ? pick(NAME_MIDDLES) : '') + pick(parts.b);
     const name = raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
-    // WoW-namen: 2-12 letters, geen drie dezelfde letters achter elkaar.
-    if (name.length >= 3 && name.length <= 12 && !/(.)\1\1/i.test(name)) return name;
+    if (acceptable(name)) return name;
   }
-  return pick(parts.a) + pick(parts.b);
+  return null;
 }
 
 export function renderNames(root) {
@@ -26,7 +40,7 @@ export function renderNames(root) {
     </div>
     <p class="muted">Kies je ras en smeed een naam. Tik op een naam om hem te kopiëren en te bewaren.</p>
     <div class="chip-grid">
-      ${RACES.map((r) => `<button class="chip ${r.id === raceId ? 'chosen' : ''}" data-r="${r.id}">${r.icon} ${esc(r.name)}</button>`).join('')}
+      ${RACES.map((r) => `<button class="chip ${r.id === raceId ? 'chosen' : ''}" data-r="${r.id}" aria-pressed="${r.id === raceId}">${r.icon} ${esc(r.name)}</button>`).join('')}
     </div>
     <button class="btn btn-primary btn-block" data-forge>🔨 Smeed namen</button>
     <ul class="name-list" aria-live="polite"></ul>
@@ -38,7 +52,10 @@ export function renderNames(root) {
 
   function forge() {
     const names = new Set();
-    for (let i = 0; i < 100 && names.size < 8; i++) names.add(makeName(raceId));
+    for (let i = 0; i < 100 && names.size < 8; i++) {
+      const n = makeName(raceId);
+      if (n) names.add(n);
+    }
     list.innerHTML = [...names].map((n) => `<li><button class="name" data-n="${esc(n)}">${esc(n)}</button></li>`).join('');
   }
 
@@ -55,7 +72,10 @@ export function renderNames(root) {
     const btn = e.target.closest('[data-r]');
     if (!btn) return;
     raceId = btn.dataset.r;
-    root.querySelectorAll('.chip').forEach((c) => c.classList.toggle('chosen', c === btn));
+    root.querySelectorAll('.chip').forEach((c) => {
+      c.classList.toggle('chosen', c === btn);
+      c.setAttribute('aria-pressed', String(c === btn));
+    });
     forge();
   });
   root.querySelector('[data-forge]').addEventListener('click', forge);

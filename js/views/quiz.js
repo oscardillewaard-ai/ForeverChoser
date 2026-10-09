@@ -2,14 +2,17 @@ import { CLASSES, TRAITS, classById } from '../data.js';
 import { QUIZ } from '../games-data.js';
 import { getState, update } from '../store.js';
 import { quizScores, quizTraits, sharedTraits, topTraits } from '../scoring.js';
-import { bar, esc, listNl, roleBadges } from '../ui.js';
+import { bar, classVars, esc, focusHeading, listNl, roleBadges } from '../ui.js';
 
 export function renderQuiz(root) {
   let index = 0;
   let answers = [];
+  let busy = false;
+  let timer = 0;
 
   function showQuestion() {
     const q = QUIZ[index];
+    busy = false;
     root.innerHTML = `
       <div class="page-head">
         <a class="back" href="#/">← Start</a>
@@ -29,10 +32,11 @@ export function renderQuiz(root) {
     `;
     root.querySelector('.answers').addEventListener('click', (e) => {
       const btn = e.target.closest('[data-i]');
-      if (!btn) return;
+      if (!btn || busy) return;
+      busy = true;
       answers[index] = Number(btn.dataset.i);
       btn.classList.add('chosen');
-      setTimeout(() => {
+      timer = setTimeout(() => {
         if (index < QUIZ.length - 1) {
           index++;
           showQuestion();
@@ -42,9 +46,11 @@ export function renderQuiz(root) {
       }, 180);
     });
     root.querySelector('[data-back]')?.addEventListener('click', () => {
+      if (busy) return;
       index--;
       showQuestion();
     });
+    focusHeading(root);
   }
 
   function finish() {
@@ -66,7 +72,7 @@ export function renderQuiz(root) {
         <a class="back" href="#/">← Start</a>
         <h1>🔮 Het Orakel spreekt</h1>
       </div>
-      <section class="card reveal" style="--cc:${best.color}">
+      <section class="card reveal" style="${classVars(best)}">
         <p class="eyebrow">Jouw class volgens het Orakel</p>
         <div class="reveal-icon" aria-hidden="true">${best.icon}</div>
         <h2 class="class-name">${esc(best.name)}</h2>
@@ -87,7 +93,7 @@ export function renderQuiz(root) {
             .map((id) => {
               const c = classById[id];
               const pct = Math.round(Math.max(0, quiz.scores[id]) * 100);
-              return `<li><a href="#/gids/class/${id}" class="rank-row"><span class="rank-name" style="color:${c.color}">${c.icon} ${esc(c.name)}</span>${bar(pct, c.color)}<span class="rank-pct">${pct}%</span></a></li>`;
+              return `<li><a href="#/gids/class/${id}" class="rank-row"><span class="rank-name" style="color:${c.text}">${c.icon} ${esc(c.name)}</span>${bar(pct, c.color)}<span class="rank-pct">${pct}%</span></a></li>`;
             })
             .join('')}
         </ol>
@@ -104,8 +110,10 @@ export function renderQuiz(root) {
       answers = [];
       showQuestion();
     });
+    focusHeading(root);
   }
 
   if (getState().quiz) showResult();
   else showQuestion();
+  return () => clearTimeout(timer);
 }

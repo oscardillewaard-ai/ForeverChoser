@@ -54,6 +54,9 @@ function route() {
 
   app.innerHTML = '';
   cleanup = view(app, match.slice(1)) || null;
+  const h1 = app.querySelector('h1');
+  const title = h1 ? h1.textContent.replace(/^[^\p{L}\d]+/u, '').trim() : '';
+  document.title = path && title ? `${title} · ForeverChoser` : 'ForeverChoser';
   window.scrollTo(0, 0);
   app.focus({ preventScroll: true });
 }
@@ -64,10 +67,11 @@ route();
 // Installeerknop: Chrome/Edge/Android geven een beforeinstallprompt-event.
 let deferredPrompt = null;
 const installBtn = document.getElementById('install-btn');
+const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  installBtn.hidden = false;
+  if (!standalone) installBtn.hidden = false;
 });
 installBtn.addEventListener('click', async () => {
   if (!deferredPrompt) return;

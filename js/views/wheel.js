@@ -1,12 +1,28 @@
 import { CLASSES, RACES, classById, raceById, isNewCombo } from '../data.js';
 import { getState, update } from '../store.js';
-import { comboName, esc, factionBadge, rand } from '../ui.js';
+import { classVars, comboName, esc, factionBadge, focusHeading, rand } from '../ui.js';
 
 const FILTERS = [
   { v: 'any', t: 'Allebei' },
   { v: 'alliance', t: '🦁 Alliance' },
   { v: 'horde', t: '🐺 Horde' },
 ];
+
+function luminance(hex) {
+  const [r, g, b] = [1, 3, 5].map((i) => {
+    const v = parseInt(hex.slice(i, i + 2), 16) / 255;
+    return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+// Donkere of witte tekst, afhankelijk van wat het meeste contrast geeft op het vlak.
+function labelColor(hex) {
+  const l = luminance(hex);
+  const dark = (l + 0.05) / (luminance('#14100a') + 0.05);
+  const light = 1.05 / (l + 0.05);
+  return dark >= light ? '#14100a' : '#ffffff';
+}
 
 function validRaces(classId, faction, onlyNew) {
   return RACES.filter(
@@ -31,7 +47,7 @@ export function renderWheel(root) {
     </div>
     <p class="muted">Kun je echt niet kiezen? Laat het lot beslissen. Eerst de class, dan het ras.</p>
     <div class="segmented" role="group" aria-label="Faction">
-      ${FILTERS.map((f) => `<button class="seg ${f.v === faction ? 'chosen' : ''}" data-f="${f.v}">${f.t}</button>`).join('')}
+      ${FILTERS.map((f) => `<button class="seg ${f.v === faction ? 'chosen' : ''}" data-f="${f.v}" aria-pressed="${f.v === faction}">${f.t}</button>`).join('')}
     </div>
     <label class="toggle"><input type="checkbox" data-new> Alleen wat nieuw is in Forever ★</label>
     <div class="wheel-wrap">
@@ -48,11 +64,12 @@ export function renderWheel(root) {
   const ctx = canvas.getContext('2d');
   const stage = root.querySelector('.wheel-stage');
   const spinBtn = root.querySelector('[data-spin]');
+  const newBox = root.querySelector('[data-new]');
   const resultEl = root.querySelector('.wheel-result');
-  let segments = classSegments();
+  let segments = classSegments(faction, onlyNew);
 
-  function classSegments() {
-    return CLASSES.filter((c) => validRaces(c.id, faction, onlyNew).length).map((c) => ({
+  function classSegments(f, nw) {
+    return CLASSES.filter((c) => validRaces(c.id, f, nw).length).map((c) => ({
       id: c.id,
       label: c.name,
       icon: c.icon,
@@ -86,7 +103,7 @@ export function renderWheel(root) {
       ctx.rotate(a0 + seg / 2);
       ctx.textAlign = 'right';
       ctx.textBaseline = 'middle';
-      ctx.fillStyle = '#14100a';
+      ctx.fillStyle = labelColor(s.color);
       ctx.font = `bold ${n > 7 ? 26 : 30}px Georgia, serif`;
       ctx.fillText(`${s.label} ${s.icon}`, r - 28, 0);
       ctx.restore();
@@ -131,59 +148,82 @@ export function renderWheel(root) {
 
   function refresh() {
     if (spinning) return;
-    segments = classSegments();
+    segments = classSegments(faction, onlyNew);
     draw();
+  }
+
+  // Tijdens het draaien liggen de filters vast; de knoppen blijven focusbaar (aria-disabled).
+  function setSpinning(on) {
+    spinning = on;
+    spinBtn.setAttribute('aria-disabled', String(on));
+    newBox.disabled = on;
   }
 
   root.querySelector('.segmented').addEventListener('click', (e) => {
     const btn = e.target.closest('[data-f]');
     if (!btn || spinning) return;
     faction = btn.dataset.f;
-    root.querySelectorAll('.seg').forEach((s) => s.classList.toggle('chosen', s === btn));
+    root.querySelectorAll('.seg').forEach((s) => {
+      s.classList.toggle('chosen', s === btn);
+      s.setAttribute('aria-pressed', String(s === btn));
+    });
     refresh();
   });
-  root.querySelector('[data-new]').addEventListener('change', (e) => {
+  newBox.addEventListener('change', (e) => {
+    if (spinning) {
+      e.target.checked = onlyNew;
+      return;
+    }
     onlyNew = e.target.checked;
     refresh();
   });
 
   spinBtn.addEventListener('click', async () => {
     if (spinning) return;
-    spinning = true;
-    spinBtn.disabled = true;
+    setSpinning(true);
     resultEl.innerHTML = '';
+    const f = faction;
+    const nw = onlyNew;
+    try {
+      segments = classSegments(f, nw);
+      if (!segments.length) {
+        stage.textContent = 'Met deze filters is er niets om uit te kiezen.';
+        return;
+      }
+      const ci = Math.floor(Math.random() * segments.length);
+      const classId = segments[ci].id;
+      stage.textContent = 'Eerst de class…';
+      await spinTo(ci);
+      const c = classById[classId];
+      stage.textContent = `Het wordt een ${c.name}! Nu het ras…`;
+      await new Promise((r) => setTimeout(r, 700));
+      if (disposed) return;
 
-    segments = classSegments();
-    const ci = Math.floor(Math.random() * segments.length);
-    const classId = segments[ci].id;
-    stage.textContent = 'Eerst de class…';
-    await spinTo(ci);
-    const c = classById[classId];
-    stage.textContent = `Het wordt een ${c.name}! Nu het ras…`;
-    await new Promise((r) => setTimeout(r, 700));
-    if (disposed) return;
+      const races = validRaces(classId, f, nw);
+      segments = races.map((r, i) => ({
+        id: r.id,
+        label: r.short || r.name,
+        icon: r.icon,
+        color: r.faction === 'horde' ? (i % 2 ? '#d0604a' : '#e88a6e') : i % 2 ? '#5b93e6' : '#8ab4f0',
+      }));
+      rotation = 0;
+      const ri = Math.floor(Math.random() * segments.length);
+      await spinTo(ri);
+      if (disposed) return;
+      const race = raceById[segments[ri].id];
 
-    const races = validRaces(classId, faction, onlyNew);
-    segments = races.map((r, i) => ({
-      id: r.id,
-      label: r.short || r.name,
-      icon: r.icon,
-      color: r.faction === 'horde' ? (i % 2 ? '#d0604a' : '#e88a6e') : i % 2 ? '#5b93e6' : '#8ab4f0',
-    }));
-    rotation = 0;
-    const ri = Math.floor(Math.random() * segments.length);
-    await spinTo(ri);
-    const race = raceById[segments[ri].id];
-
-    stage.textContent = '';
-    showResult(race.id, classId);
-    const history = [{ raceId: race.id, classId }, ...getState().wheel].slice(0, 5);
-    update({ wheel: history });
-    renderHistory();
-    spinning = false;
-    spinBtn.disabled = false;
-    spinBtn.textContent = '🎲 Nog een keer';
-    segments = classSegments();
+      stage.textContent = `Het lot koos: ${comboName(race.id, classId)}`;
+      showResult(race.id, classId);
+      const history = [{ raceId: race.id, classId }, ...getState().wheel].slice(0, 5);
+      update({ wheel: history });
+      renderHistory();
+      spinBtn.textContent = '🎲 Nog een keer';
+    } finally {
+      if (!disposed) {
+        setSpinning(false);
+        segments = classSegments(faction, onlyNew);
+      }
+    }
   });
 
   function showResult(raceId, classId) {
@@ -191,7 +231,7 @@ export function renderWheel(root) {
     const c = classById[classId];
     const isNew = race.skyborne || isNewCombo(race, classId);
     resultEl.innerHTML = `
-      <section class="card reveal" style="--cc:${c.color}">
+      <section class="card reveal" style="${classVars(c)}">
         <p class="eyebrow">Het lot heeft gekozen</p>
         <div class="reveal-icon" aria-hidden="true">${race.icon}${c.icon}</div>
         <h2 class="class-name">${esc(comboName(raceId, classId))}</h2>
@@ -203,6 +243,9 @@ export function renderWheel(root) {
         </div>
       </section>
     `;
+    focusHeading(resultEl);
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    resultEl.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'nearest' });
   }
 
   function renderHistory() {

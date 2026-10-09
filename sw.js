@@ -1,6 +1,6 @@
 // Service worker: bewaart de app offline. Verhoog VERSION bij elke release
 // zodat telefoons de nieuwe bestanden ophalen.
-const VERSION = 'v1';
+const VERSION = 'v2';
 const CACHE = `foreverchoser-${VERSION}`;
 const ASSETS = [
   './',
@@ -30,7 +30,13 @@ const ASSETS = [
 ];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(ASSETS)).then(() => self.skipWaiting()));
+  // cache: 'reload' haalt verse bestanden op, niet de kopie uit de HTTP-cache van de browser.
+  event.waitUntil(
+    caches
+      .open(CACHE)
+      .then((cache) => cache.addAll(ASSETS.map((url) => new Request(url, { cache: 'reload' }))))
+      .then(() => self.skipWaiting()),
+  );
 });
 
 self.addEventListener('activate', (event) => {
@@ -49,9 +55,15 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.open(CACHE).then(async (cache) => {
       const cached = await cache.match(request, { ignoreSearch: true });
-      const network = fetch(request)
+      // no-cache: altijd bij de server navragen of er een nieuwere versie is.
+      const network = fetch(request, { cache: 'no-cache' })
         .then((res) => {
-          if (res.ok) cache.put(request, res.clone());
+          if (res.ok) {
+            // Opslaan zonder query (?fbclid=…), zodat de lookup met ignoreSearch altijd dezelfde entry vindt.
+            const key = new URL(request.url);
+            key.search = '';
+            cache.put(key.href, res.clone());
+          }
           return res;
         })
         .catch(() => null);

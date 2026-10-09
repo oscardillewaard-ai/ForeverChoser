@@ -23,8 +23,14 @@
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 html {
   -webkit-text-size-adjust: 100%;
+  scroll-padding-top: calc(60px + env(safe-area-inset-top));
+  scroll-padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + 8px);
 }
 
 body {
@@ -400,8 +406,8 @@ a.card:active {
 }
 
 .btn-danger {
-  background: var(--danger);
-  border-color: #ff8a7e;
+  background: #b83a2f;
+  border-color: #ef6a5c;
   color: #fff;
 }
 
@@ -543,7 +549,7 @@ a.card:active {
 
 .class-name {
   font-size: 1.9rem;
-  color: var(--cc, var(--gold-2));
+  color: var(--ct, var(--cc, var(--gold-2)));
   margin: 0 0 6px;
 }
 
@@ -609,7 +615,7 @@ a.card:active {
 
 .class-badge {
   border-color: color-mix(in srgb, var(--cc) 60%, transparent);
-  color: var(--cc);
+  color: var(--ct, var(--cc));
 }
 
 .class-badge.big {
@@ -686,9 +692,7 @@ a.card:active {
 
 .rank-name {
   font-weight: 600;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
 .rank-pct {
@@ -892,8 +896,14 @@ a.card:active {
 }
 
 .on-gcd .frame,
+.on-gcd .spell,
 .on-gcd .ability:not([data-a='fury']) {
   opacity: 0.7;
+}
+
+.spell.cooldown,
+[aria-disabled='true'] {
+  opacity: 0.45;
 }
 
 .spell {
@@ -1054,21 +1064,21 @@ a.card:active {
 }
 
 .fire {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  z-index: 2;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  margin-top: 10px;
-  padding: 10px 12px;
+  padding: 8px 10px;
   border-radius: 12px;
-  background: rgba(224, 86, 74, 0.2);
+  background: #3a1f24;
   border: 1px solid var(--danger);
   font-weight: 600;
   animation: rise 0.2s ease both;
-}
-
-.fire[hidden] {
-  display: none;
 }
 
 .abilities {
@@ -1141,7 +1151,7 @@ a.card:active {
   line-height: 1;
   background: none;
   border: 0;
-  color: rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.35);
   cursor: pointer;
   padding: 4px;
 }
@@ -1281,15 +1291,9 @@ a.card:active {
 
 .tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
-  overflow-x: auto;
-  padding-bottom: 6px;
   margin-bottom: 12px;
-  scrollbar-width: none;
-}
-
-.tabs::-webkit-scrollbar {
-  display: none;
 }
 
 .tabs a {
@@ -1491,5 +1495,107 @@ a.card:active {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* ---------- tijdens een mini-game ---------- */
+
+.game-head h1 {
+  flex: 1;
+}
+
+.game-head .stop {
+  flex: 1 1 100%;
+  order: 3;
+}
+
+body.in-game {
+  padding-bottom: calc(16px + env(safe-area-inset-bottom));
+}
+
+.in-game .bottomnav {
+  display: none;
+}
+
+.in-game .topbar {
+  position: static;
+}
+
+/* Lage schermen (landscape, kleine telefoons): alles compacter zodat het spel past. */
+@media (max-height: 600px) {
+  .in-game .topbar {
+    display: none;
+  }
+
+  .in-game main {
+    padding-top: 8px;
+  }
+
+  .game-head {
+    margin-bottom: 6px;
+  }
+
+  .game-head h1 {
+    font-size: 1.2rem;
+  }
+
+  .game-head .stop {
+    flex: none;
+    order: 0;
+  }
+
+  .boss {
+    padding: 8px;
+    min-height: 120px;
+  }
+
+  .boss-icon {
+    font-size: 2rem;
+  }
+
+  .dmg-total {
+    font-size: 1.4rem;
+  }
+
+  .ability {
+    min-height: 64px;
+    padding: 6px 4px;
+  }
+
+  .frames {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+
+  .frame {
+    grid-template-columns: 1fr;
+    gap: 4px;
+    min-height: 0;
+    padding: 8px;
+  }
+
+  .frame .hp-num {
+    display: none;
+  }
+
+  .mob {
+    flex-basis: calc((100% - 40px) / 5);
+    padding: 8px 4px;
+  }
+
+  .mob-icon {
+    font-size: 1.5rem;
+  }
+
+  .allies {
+    margin-bottom: 8px;
+  }
+
+  .spell {
+    margin-top: 8px;
+    min-height: 40px;
+  }
+
+  .resource {
+    margin-bottom: 8px;
   }
 }

@@ -87,7 +87,7 @@ export const CLASSES = [
     soloEase: 3,
     tagline: 'Heilig Licht in een harnas van plaat.',
     fantasy:
-      'Een heilige strijder die kan tanken (Protection), genezen (Holy) of met een tweehandig wapen kan toeslaan (Retribution). In Forever krijgt de Paladin de grootste opknapbeurt van alle classes, en voor het eerst kan ook de Horde een Paladin spelen, via de Undead.',
+      'Een heilige strijder die kan tanken (Protection), genezen (Holy) of met een tweehandig wapen kan toeslaan (Retribution). In Forever krijgt de Paladin een van de grootste opknapbeurten van alle classes, en voor het eerst kan ook de Horde een Paladin spelen, via de Undead.',
     pros: [
       'Erg stevig: je gaat niet snel dood',
       'Kan alle drie de rollen: tank, heal en DPS',
@@ -132,7 +132,7 @@ export const CLASSES = [
     pros: [
       'Topkeuze voor solo levelen: je pet tankt voor je',
       'Veel afstand en controle met traps en kiten',
-      'Tientallen dieren om te temmen en te verzamelen',
+      'Tientallen soorten dieren om te temmen',
     ],
     cons: [
       'Vaak de populairste class: meer concurrentie om loot',
@@ -142,7 +142,6 @@ export const CLASSES = [
     forever: [
       'Aimed Shot is baseline vanaf level 20',
       'Traps zijn ook in combat te gebruiken',
-      'Meer stable-slots voor meer verschillende pets',
       'Nieuw: Human Hunter',
     ],
     traits: { ranged: 3, pet: 3, physical: 2, solo: 3, nature: 2, simple: 2, control: 1, burst: 1 },
@@ -233,6 +232,7 @@ export const CLASSES = [
     abbr: 'Sha',
     icon: '⚡',
     color: '#0070DD',
+    text: '#5AA9FF',
     roles: ['heal', 'melee', 'ranged'],
     specs: ['Elemental', 'Enhancement', 'Restoration'],
     resource: 'Mana',
@@ -309,6 +309,7 @@ export const CLASSES = [
     abbr: 'Lock',
     icon: '😈',
     color: '#8788EE',
+    text: '#A3A4F5',
     roles: ['ranged'],
     specs: ['Affliction', 'Demonology', 'Destruction'],
     resource: 'Mana (en Soul Shards)',
@@ -317,7 +318,7 @@ export const CLASSES = [
     soloEase: 5,
     tagline: 'Demonen dienen jou, vloeken doen de rest.',
     fantasy:
-      'De Warlock vecht met vloeken, DoTs en een demonische metgezel. Life Tap en Drain-spreuken maken je erg zelfvoorzienend: samen met de Hunter de sterkste solo-class volgens de gidsen. In Forever de class met de meeste talentwijzigingen.',
+      'De Warlock vecht met vloeken, DoTs en een demonische metgezel. Life Tap en Drain-spreuken maken je erg zelfvoorzienend: samen met de Hunter de sterkste solo-class volgens de gidsen. In Forever een van de classes met de meeste talentwijzigingen.',
     pros: [
       'Uitstekend solo dankzij je demon en DoTs',
       'Veel utility: Healthstones en spelers summonen',
@@ -326,10 +327,10 @@ export const CLASSES = [
     cons: [
       'Kwetsbaar in cloth',
       'Het duistere thema is niet voor iedereen',
-      'Grootste rework: talenten nog in beweging tijdens de beta',
+      'Flinke rework: talenten nog in beweging tijdens de beta',
     ],
     forever: [
-      'Grootste talent-rework: 22 nieuwe en 20 verwijderde talenten',
+      'Een van de grootste talent-reworks: veel nieuwe talenten in alle drie de bomen',
       'Curses krijgen Banes',
       'De Succubus-lijn wordt de Sayaad',
       'Elke talentboom eindigt in een nieuw talent',
@@ -385,6 +386,9 @@ export const CLASSES = [
   },
 ];
 
+// Tekstkleur: standaard de class-kleur, behalve waar die te weinig contrast heeft.
+for (const c of CLASSES) c.text ??= c.color;
+
 const SKYBORNE_LORE =
   'Elfen die afstammen van Highborne-rebellen. Ze sloten een pact met de windgeesten van Skywall, die hun eiland Zephras Isle het elementaire rijk van de lucht in tilden. Eeuwen geleden verdwenen de windgeesten, en nu begint het eiland te haperen.';
 
@@ -407,6 +411,7 @@ export const RACES = [
     look: ['klassiek'],
     vibe: ['eer', 'avontuur'],
     pvp: 3,
+    pvpWhy: 'Will to Survive breekt stuns en Perception ziet stealth: sterk in PvP',
     quest: 1,
     start: 'Northshire Abbey (Elwynn Forest)',
     capital: 'Stormwind',
@@ -473,6 +478,7 @@ export const RACES = [
     look: ['klein', 'schattig'],
     vibe: ['techniek', 'magie'],
     pvp: 3,
+    pvpWhy: 'Escape Artist (roots en snares) en Eureka! zijn sterk in PvP',
     quest: 1,
     start: 'Coldridge Valley (Dun Morogh)',
     capital: 'Ironforge (Tinker Town)',
@@ -540,6 +546,7 @@ export const RACES = [
     look: ['macaber'],
     vibe: ['rebel', 'duister'],
     pvp: 3,
+    pvpWhy: 'Will of the Forsaken breekt Fear, Charm en Sleep: sterk in PvP',
     quest: 2,
     start: 'Deathknell (Tirisfal Glades)',
     capital: 'Undercity',
@@ -586,7 +593,7 @@ export const RACES = [
     pvp: 1,
     quest: 3,
     start: 'Valley of Trials (Durotar)',
-    capital: "Orgrimmar (Sen'jin Village)",
+    capital: 'Orgrimmar (Valley of Spirits)',
     lore: 'De Darkspear-trollen van de Echo Isles: voodoo, loa-geesten en een verbazingwekkend vermogen om te herstellen. Nieuw in Forever: Troll Warlocks, heksendokters die pacten sluiten met duistere loa.',
     classes: ['warrior', 'hunter', 'rogue', 'priest', 'shaman', 'mage', 'warlock'],
     newClasses: ['warlock'],
@@ -640,15 +647,15 @@ export function isNewCombo(race, classId) {
 }
 
 export const FACTS = [
-  { title: 'Launch', text: `WoW Forever start op ${LAUNCH_DATE}. Je speelt het met een gewoon WoW-abonnement of Game Time.` },
-  { title: 'Level 60, voor altijd', text: 'Het level cap blijft 60. Geen vliegende mounts en geen level scaling: de reis telt, niet de bestemming.' },
+  { title: 'Launch', text: `WoW Forever start op ${LAUNCH_DATE} om 15:00 Pacific-tijd; in Nederland is dat 5 november om 00:00. Je speelt het met een gewoon WoW-abonnement of Game Time.` },
+  { title: 'Level 60, voor altijd', text: 'De levelcap blijft 60. Geen vliegende mounts en geen level scaling: de reis telt, niet de bestemming.' },
   { title: 'Nieuwe content', text: 'Volgens Blizzard drie nieuwe zones, meer dan 1.000 quests, negen dungeons en twee raids, met o.a. Mount Hyjal en Zephras Isle.' },
   { title: 'Geen realmlijst', text: 'Je kiest bij het maken van je character een ruleset: Normal, PvP of Roleplaying. Je groept alleen met spelers op dezelfde ruleset.' },
-  { title: 'PvP-ruleset: één faction', text: 'Op de PvP-ruleset kun je maar één faction maken. Speel je met vrienden? Spreek dus vooraf af: Alliance of Horde.' },
+  { title: 'PvP-ruleset: één faction', text: 'Op de PvP-ruleset kun je alleen characters van één faction maken. Speel je met vrienden? Spreek dus vooraf af: Alliance of Horde.' },
   { title: 'Hardcore komt later', text: 'Hardcore (één leven) komt na de launch. Gestorven characters kunnen daarna naar een andere ruleset verhuizen.' },
   { title: 'Legacy', text: 'Account-brede Legacy Points (max. 65 bij launch) geven perks en cosmetica. Per character kun je er maximaal 16 besteden.' },
   { title: 'Dual spec', text: 'Vanaf level 40 kun je twee specs tegelijk hebben. Talenten reset je bij een class trainer in een hoofdstad.' },
-  { title: 'Talenten', text: 'Elke class houdt drie talentbomen, nu met 467 talenten in totaal, waarvan 140 nieuw, en een nieuwe mijlpaal bij 16 punten.' },
+  { title: 'Talenten', text: 'Elke class houdt drie talentbomen. In totaal zijn er 467 talenten, waarvan ruim honderd nieuw volgens fan-tellingen uit de beta, en er is een nieuwe mijlpaal bij 16 punten.' },
   { title: 'Skyborne', text: 'Het nieuwe ras vereist de Skyborne Heroic Pack of een hogere editie. Controleer de exacte editie in de Blizzard-shop.' },
 ];
 

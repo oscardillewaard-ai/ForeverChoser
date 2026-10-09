@@ -1,9 +1,12 @@
 import { TRAITS, classById } from '../data.js';
 import { getState, resetAll } from '../store.js';
 import { WEIGHTS, combinedScores, duelScores, raceRanking, sharedTraits, trialDone } from '../scoring.js';
-import { bar, comboName, esc, factionBadge, listNl, roleBadges, shareText } from '../ui.js';
+import { bar, classVars, comboName, esc, factionBadge, listNl, roleBadges, shareText } from '../ui.js';
 
 const SOURCE_LABEL = { quiz: '🔮 Orakel-quiz', duel: '⚖️ Dit of Dat', trial: '🎮 Rol-proefrit' };
+const SOURCE_HREF = { quiz: '#/quiz', duel: '#/duel', trial: '#/proefrit' };
+const DONE = { quiz: (s) => !!s.quiz, duel: (s) => !!s.duel, trial: (s) => trialDone(s.trial) };
+const testLinks = (keys) => keys.map((k) => `<a href="${SOURCE_HREF[k]}">${SOURCE_LABEL[k]}</a>`).join(', ');
 
 function reasonsFor(state, classId) {
   const out = [];
@@ -29,6 +32,8 @@ function reasonsFor(state, classId) {
 export function renderResults(root) {
   const state = getState();
   const combined = combinedScores(state);
+  const done = Object.keys(DONE).filter((k) => DONE[k](state));
+  const missing = Object.keys(DONE).filter((k) => !DONE[k](state));
 
   if (!combined) {
     root.innerHTML = `
@@ -36,8 +41,12 @@ export function renderResults(root) {
       <section class="card empty">
         <p class="reveal-icon" aria-hidden="true">🔮</p>
         <h2>Nog geen resultaat</h2>
-        <p class="muted">Doe minstens één test. Hoe meer tests, hoe beter het advies.</p>
-        <a class="btn btn-primary" href="#/quiz">Start de Orakel-quiz</a>
+        ${
+          done.length
+            ? `<p class="muted">Je tests (${testLinks(done)}) geven nog geen duidelijke voorkeur voor een class. Kies in de duels telkens één kant, geef de rollen verschillende sterren of doe de quiz.</p>`
+            : '<p class="muted">Doe minstens één test. Hoe meer tests, hoe beter het advies.</p>'
+        }
+        <a class="btn btn-primary" href="${SOURCE_HREF[missing[0] || 'quiz']}">${missing.length ? `Start ${SOURCE_LABEL[missing[0]]}` : 'Doe de quiz opnieuw'}</a>
       </section>`;
     return;
   }
@@ -48,12 +57,12 @@ export function renderResults(root) {
   const races = raceRanking(raceAnswers, top);
   const bestRace = races[0];
   const reasons = reasonsFor(state, top);
-  const missing = ['quiz', 'duel', 'trial'].filter((k) => !combined.sources.includes(k));
+  const flat = done.filter((k) => !combined.sources.includes(k));
   const combo = comboName(bestRace.race.id, top);
 
   root.innerHTML = `
     <div class="page-head"><h1>🏆 Jouw resultaat</h1></div>
-    <section class="card reveal hero-result" style="--cc:${c.color}">
+    <section class="card reveal hero-result" style="${classVars(c)}">
       <p class="eyebrow">Jouw held in WoW Forever</p>
       <div class="reveal-icon" aria-hidden="true">${bestRace.race.icon}${c.icon}</div>
       <h2 class="class-name">${esc(combo)}</h2>
@@ -70,7 +79,14 @@ export function renderResults(root) {
     ${
       missing.length
         ? `<section class="card notice-card">
-            <p>Nog niet gedaan: ${missing.map((k) => `<a href="#/${k === 'trial' ? 'proefrit' : k}">${SOURCE_LABEL[k]}</a>`).join(', ')}. Elke extra test maakt het advies scherper.</p>
+            <p>Nog niet gedaan: ${testLinks(missing)}. Elke extra test maakt het advies scherper.</p>
+          </section>`
+        : ''
+    }
+    ${
+      flat.length
+        ? `<section class="card notice-card">
+            <p>Telt niet mee omdat er geen duidelijke voorkeur uit kwam: ${testLinks(flat)}.</p>
           </section>`
         : ''
     }
@@ -84,7 +100,7 @@ export function renderResults(root) {
           .map((id, i) => {
             const x = classById[id];
             const r = raceRanking(raceAnswers, id)[0];
-            return `<li style="--cc:${x.color}"><a href="#/gids/class/${id}"><span class="medal">${['🥇', '🥈', '🥉'][i]}</span><span><strong style="color:${x.color}">${x.icon} ${esc(x.name)}</strong><br><span class="muted small">bijvoorbeeld als ${esc(comboName(r.race.id, id))}</span></span><span class="rank-pct">${Math.round(combined.scores[id] * 100)}</span></a></li>`;
+            return `<li style="${classVars(x)}"><a href="#/gids/class/${id}"><span class="medal">${['🥇', '🥈', '🥉'][i]}</span><span><strong style="color:${x.text}">${x.icon} ${esc(x.name)}</strong><br><span class="muted small">bijvoorbeeld als ${esc(comboName(r.race.id, id))}</span></span><span class="rank-pct">${Math.round(combined.scores[id] * 100)}</span></a></li>`;
           })
           .join('')}
       </ol>
@@ -97,7 +113,7 @@ export function renderResults(root) {
           .map((id) => {
             const x = classById[id];
             const pct = Math.round(combined.scores[id] * 100);
-            return `<li><a href="#/gids/class/${id}" class="rank-row"><span class="rank-name" style="color:${x.color}">${x.icon} ${esc(x.name)}</span>${bar(pct, x.color)}<span class="rank-pct">${pct}</span></a></li>`;
+            return `<li><a href="#/gids/class/${id}" class="rank-row"><span class="rank-name" style="color:${x.text}">${x.icon} ${esc(x.name)}</span>${bar(pct, x.color)}<span class="rank-pct">${pct}</span></a></li>`;
           })
           .join('')}
       </ol>

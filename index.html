@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="nl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>ForeverChoser</title>
+    <meta name="description" content="Kies je ras en class voor World of Warcraft: Forever met quizzen, duels en mini-games." />
+    <meta name="theme-color" content="#0d0f17" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="ForeverChoser" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+    <link rel="icon" href="icons/icon-192.png" sizes="192x192" type="image/png" />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+    <link rel="stylesheet" href="css/style.css" />
+    <script type="module" src="js/app.js"></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#/">
+        <img src="icons/icon.svg" alt="" width="28" height="28" />
+        <span>ForeverChoser</span>
+      </a>
+      <button id="install-btn" class="btn btn-small btn-ghost" hidden>📲 Installeer</button>
+    </header>
+
+    <main id="app" tabindex="-1">
+      <noscript><p class="card">Deze app heeft JavaScript nodig.</p></noscript>
+    </main>
+
+    <nav class="bottomnav" aria-label="Hoofdmenu">
+      <a href="#/" data-nav="home"><span aria-hidden="true">🏠</span>Start</a>
+      <a href="#/rad" data-nav="rad"><span aria-hidden="true">🎡</span>Rad</a>
+      <a href="#/gids" data-nav="gids"><span aria-hidden="true">📖</span>Gids</a>
+      <a href="#/resultaat" data-nav="resultaat"><span aria-hidden="true">🏆</span>Resultaat</a>
+    </nav>
+  </body>
+</html>

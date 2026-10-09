@@ -1,0 +1,19 @@
+{
+  "name": "ForeverChoser: kies je held voor WoW Forever",
+  "short_name": "ForeverChoser",
+  "description": "Kies je ras en class voor World of Warcraft: Forever met quizzen, duels en mini-games.",
+  "lang": "nl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0d0f17",
+  "theme_color": "#0d0f17",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

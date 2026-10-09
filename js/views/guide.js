@@ -1,5 +1,5 @@
 import { CLASSES, FACTS, RACES, RESEARCH_DATE, SOURCES, classById, raceById, isNewCombo, racesForClass } from '../data.js';
-import { classBadge, dots, esc, factionBadge, roleBadges } from '../ui.js';
+import { classBadge, classVars, dots, esc, factionBadge, roleBadges } from '../ui.js';
 
 const TABS = [
   { id: '', label: 'Classes' },
@@ -10,7 +10,7 @@ const TABS = [
 ];
 
 function tabs(active) {
-  return `<nav class="tabs" aria-label="Gids">${TABS.map((t) => `<a href="#/gids${t.id ? '/' + t.id : ''}" class="${t.id === active ? 'active' : ''}">${t.label}</a>`).join('')}</nav>`;
+  return `<nav class="tabs" aria-label="Gids">${TABS.map((t) => `<a href="#/gids${t.id ? '/' + t.id : ''}" class="${t.id === active ? 'active' : ''}"${t.id === active ? ' aria-current="page"' : ''}>${t.label}</a>`).join('')}</nav>`;
 }
 
 export function renderGuide(root, [sub = '']) {
@@ -32,8 +32,8 @@ function classList() {
     <div class="grid">
       ${CLASSES.map(
         (c) => `
-        <a class="card class-card" href="#/gids/class/${c.id}" style="--cc:${c.color}">
-          <span class="class-card-head"><span class="game-icon" aria-hidden="true">${c.icon}</span><span class="game-title" style="color:${c.color}">${esc(c.name)}</span></span>
+        <a class="card class-card" href="#/gids/class/${c.id}" style="${classVars(c)}">
+          <span class="class-card-head"><span class="game-icon" aria-hidden="true">${c.icon}</span><span class="game-title" style="color:${c.text}">${esc(c.name)}</span></span>
           <span class="muted small">${esc(c.tagline)}</span>
           <span class="badges">${roleBadges(c.roles)}</span>
         </a>`,
@@ -68,7 +68,7 @@ function matrix() {
     <p class="muted">56 combinaties in totaal: 28 per faction. ★ = nieuw in Forever, ✓ = bestond al in Classic. Skyborne (A) = High Order (Alliance), (H) = Windshaper (Horde).</p>
     <div class="table-scroll">
       <table class="matrix">
-        <thead><tr><th scope="col">Ras</th>${CLASSES.map((c) => `<th scope="col" title="${esc(c.name)}" style="color:${c.color}"><span aria-hidden="true">${c.icon}</span><span class="th-label" aria-label="${esc(c.name)}">${esc(c.abbr)}</span></th>`).join('')}</tr></thead>
+        <thead><tr><th scope="col">Ras</th>${CLASSES.map((c) => `<th scope="col" title="${esc(c.name)}" style="color:${c.text}"><span aria-hidden="true">${c.icon}</span><span class="th-label" aria-label="${esc(c.name)}">${esc(c.abbr)}</span></th>`).join('')}</tr></thead>
         <tbody>
           ${RACES.map((r) => `<tr class="${r.faction}"><th scope="row"><a href="#/gids/ras/${r.id}">${r.icon} ${esc(r.skyborne ? `Skyborne (${r.faction === 'horde' ? 'H' : 'A'})` : r.name)}</a></th>${CLASSES.map((c) => cell(r, c)).join('')}</tr>`).join('')}
         </tbody>
@@ -113,7 +113,7 @@ function classDetail(root, c) {
     <div class="page-head">
       <a class="back" href="#/gids">← Gids</a>
     </div>
-    <section class="card reveal" style="--cc:${c.color}">
+    <section class="card reveal" style="${classVars(c)}">
       <div class="reveal-icon" aria-hidden="true">${c.icon}</div>
       <h1 class="class-name">${esc(c.name)}</h1>
       <p class="muted">${esc(c.tagline)}</p>
@@ -128,7 +128,7 @@ function classDetail(root, c) {
         <dt>Moeilijkheid</dt><dd>${dots(c.difficulty, 5, 'Moeilijkheid')}</dd>
         <dt>Solo levelen</dt><dd>${dots(c.soloEase, 5, 'Solo levelen')}</dd>
       </dl>
-      <p class="muted small">Moeilijkheid en solo-sterkte zijn een indicatie, zie Bronnen.</p>
+      <p class="muted small">Moeilijkheid en solo-sterkte zijn een indicatie, zie <a href="#/gids/bronnen">Bronnen</a>.</p>
     </section>
     <div class="grid grid-2">
       <section class="card"><h3>👍 Sterk</h3><ul class="plain">${c.pros.map((p) => `<li>${esc(p)}</li>`).join('')}</ul></section>

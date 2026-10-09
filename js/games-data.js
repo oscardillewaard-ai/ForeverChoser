@@ -123,7 +123,7 @@ export const RACE_QUIZ = [
   {
     key: 'faction',
     q: 'Bij welke kant hoor jij?',
-    hint: 'Speel je met vrienden? Kies dezelfde faction. Op de PvP-ruleset kun je maar één faction maken.',
+    hint: 'Speel je met vrienden? Kies dezelfde faction. Op de PvP-ruleset kun je alleen characters van één faction maken.',
     a: [
       { t: '🦁 Alliance: koninkrijken, orde en glanzende harnassen', v: 'alliance' },
       { t: '🐺 Horde: eer, overleven en een bont gezelschap', v: 'horde' },
@@ -200,7 +200,7 @@ export const NAME_PARTS = {
     b: ['ris', 'yra', 'wind', 'thas', 'iel', 'ara', 'vane', 'lis', 'ion', 'ael', 'drel', 'nor', 'esse'],
   },
   orc: {
-    a: ['Gro', 'Thra', 'Dur', 'Gar', 'Kro', 'Mog', 'Naz', 'Rok', 'Zug', 'Gor', 'Ur', 'Ka', 'Dra', 'Sha'],
+    a: ['Gro', 'Thra', 'Dur', 'Gar', 'Kro', 'Mog', 'Nag', 'Rok', 'Zug', 'Gor', 'Ur', 'Ka', 'Dra', 'Sha'],
     b: ['mash', 'gar', 'thak', 'gul', 'rok', 'ka', 'dra', 'zog', 'nash', 'gash', 'grim', 'tar', 'ruk'],
   },
   undead: {

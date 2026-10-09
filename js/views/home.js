@@ -48,7 +48,7 @@ export function renderHome(root) {
 
   root.innerHTML = `
     <section class="hero">
-      <p class="eyebrow">World of Warcraft: Forever · launch ${LAUNCH_DATE}</p>
+      <p class="eyebrow">World of Warcraft: Forever · start ${LAUNCH_DATE} (NL: 5 nov, 00:00)</p>
       <h1>Welke held word jij?</h1>
       <p class="lead">Speel de tests en mini-games en ontdek welke class en welk ras bij je passen. Zes nieuwe combinaties en een gloednieuw ras: de keuze was nog nooit zo groot.</p>
       <div class="progress-row">

@@ -49,16 +49,19 @@ export function sharedTraits(traits, classId, n = 3) {
     .slice(0, n);
 }
 
+// "Allebei even leuk" (ties) telt als een halve overwinning voor beide classes.
 export function duelScores(duel) {
   return Object.fromEntries(
     CLASSES.map((c) => {
       const apps = duel.apps[c.id] || 0;
-      return [c.id, apps ? (duel.wins[c.id] || 0) / apps : 0];
+      const won = (duel.wins[c.id] || 0) + 0.5 * (duel.ties?.[c.id] || 0);
+      return [c.id, apps ? won / apps : 0];
     }),
   );
 }
 
 // Rol-proefrit: elke class krijgt de hoogste beoordeling van de rollen die hij kan spelen.
+// Een rol die nog niet beoordeeld is telt als neutraal (3 sterren).
 export function trialScores(trial) {
   const rating = {
     tank: trial.tank?.rating,
@@ -68,8 +71,8 @@ export function trialScores(trial) {
   return Object.fromEntries(
     CLASSES.map((c) => {
       const roles = c.roles.map((r) => (r === 'melee' || r === 'ranged' ? 'dps' : r));
-      const vals = roles.map((r) => rating[r]).filter((v) => v != null);
-      return [c.id, vals.length ? (Math.max(...vals) - 1) / 4 : 0];
+      const vals = roles.map((r) => rating[r] ?? 3);
+      return [c.id, (Math.max(...vals) - 1) / 4];
     }),
   );
 }
@@ -78,19 +81,31 @@ export function trialDone(trial) {
   return ['heal', 'tank', 'dps'].some((k) => trial?.[k]?.rating);
 }
 
-function normalize(scores) {
+function spread(scores) {
   const vals = Object.values(scores);
-  const min = Math.min(...vals);
-  const max = Math.max(...vals);
-  if (max - min < 1e-9) return Object.fromEntries(Object.keys(scores).map((k) => [k, 0.5]));
-  return Object.fromEntries(Object.entries(scores).map(([k, v]) => [k, (v - min) / (max - min)]));
+  return Math.max(...vals) - Math.min(...vals);
 }
 
+function normalize(scores) {
+  const min = Math.min(...Object.values(scores));
+  const range = spread(scores);
+  return Object.fromEntries(Object.entries(scores).map(([k, v]) => [k, (v - min) / range]));
+}
+
+// Een test die geen verschil tussen classes maakt (alles overgeslagen, alleen DPS
+// beoordeeld) telt niet mee; anders zou de eerste class in de lijst "winnen".
 export function combinedScores(state) {
   const parts = [];
-  if (state.quiz) parts.push({ key: 'quiz', scores: normalize(state.quiz.scores) });
-  if (state.duel) parts.push({ key: 'duel', scores: normalize(duelScores(state.duel)) });
-  if (trialDone(state.trial)) parts.push({ key: 'trial', scores: normalize(trialScores(state.trial)) });
+  if (state.quiz && spread(state.quiz.scores) > 1e-9) parts.push({ key: 'quiz', scores: normalize(state.quiz.scores) });
+  if (state.duel) {
+    const d = duelScores(state.duel);
+    if (spread(d) > 1e-9) parts.push({ key: 'duel', scores: normalize(d) });
+  }
+  if (trialDone(state.trial)) {
+    // Absolute waarden: 4 sterren voor tanken weegt minder zwaar dan 5 sterren.
+    const t = trialScores(state.trial);
+    if (spread(t) > 1e-9) parts.push({ key: 'trial', scores: t });
+  }
   if (!parts.length) return null;
   const totalW = parts.reduce((s, p) => s + WEIGHTS[p.key], 0);
   const scores = Object.fromEntries(
@@ -134,7 +149,7 @@ export function raceRanking(answers, classId) {
         break;
       case 'pvp':
         score += race.pvp;
-        if (race.pvp >= 3) reasons.push('Sterke racials tegen stuns, fear of stealth in PvP');
+        if (race.pvp >= 3 && race.pvpWhy) reasons.push(race.pvpWhy);
         break;
       case 'quest':
         score += race.quest;

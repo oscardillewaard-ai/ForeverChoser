@@ -2,16 +2,20 @@ import { CLASSES, classById } from '../data.js';
 import { RACE_QUIZ } from '../games-data.js';
 import { getState, update } from '../store.js';
 import { combinedScores, raceRanking } from '../scoring.js';
-import { bar, comboName, esc, factionBadge } from '../ui.js';
+import { bar, classVars, comboName, esc, factionBadge, focusHeading } from '../ui.js';
 
 export function renderRace(root) {
+  const testBest = () => combinedScores(getState())?.ranking[0] || null;
   let step = 0;
   let answers = {};
-  let classId = combinedScores(getState())?.ranking[0] || null;
+  let classId = testBest();
+  let busy = false;
+  let timer = 0;
 
   function showStep() {
     if (step >= RACE_QUIZ.length) return showClassPick();
     const q = RACE_QUIZ[step];
+    busy = false;
     root.innerHTML = `
       <div class="page-head">
         <a class="back" href="#/">← Start</a>
@@ -32,18 +36,21 @@ export function renderRace(root) {
     `;
     root.querySelector('.answers').addEventListener('click', (e) => {
       const btn = e.target.closest('[data-v]');
-      if (!btn) return;
+      if (!btn || busy) return;
+      busy = true;
       answers[q.key] = btn.dataset.v;
       btn.classList.add('chosen');
-      setTimeout(() => {
+      timer = setTimeout(() => {
         step++;
         showStep();
       }, 180);
     });
     root.querySelector('[data-back]')?.addEventListener('click', () => {
+      if (busy) return;
       step--;
       showStep();
     });
+    focusHeading(root);
   }
 
   function showClassPick() {
@@ -58,9 +65,9 @@ export function renderRace(root) {
       </div>
       <section class="card question">
         <h2>Voor welke class zoek je een ras?</h2>
-        ${classId ? '<p class="muted small">Voorgeselecteerd: je beste match uit de tests.</p>' : ''}
+        ${classId && classId === testBest() ? '<p class="muted small">Voorgeselecteerd: je beste match uit de tests.</p>' : ''}
         <div class="chip-grid">
-          ${CLASSES.map((c) => `<button class="chip ${c.id === classId ? 'chosen' : ''}" data-c="${c.id}" style="--cc:${c.color}">${c.icon} ${esc(c.name)}</button>`).join('')}
+          ${CLASSES.map((c) => `<button class="chip ${c.id === classId ? 'chosen' : ''}" data-c="${c.id}" aria-pressed="${c.id === classId}" style="--cc:${c.color}">${c.icon} ${esc(c.name)}</button>`).join('')}
         </div>
       </section>
       <div class="actions">
@@ -73,7 +80,10 @@ export function renderRace(root) {
       const btn = e.target.closest('[data-c]');
       if (!btn) return;
       classId = btn.dataset.c;
-      root.querySelectorAll('.chip').forEach((c) => c.classList.toggle('chosen', c === btn));
+      root.querySelectorAll('.chip').forEach((c) => {
+        c.classList.toggle('chosen', c === btn);
+        c.setAttribute('aria-pressed', String(c === btn));
+      });
       go.disabled = false;
     });
     root.querySelector('[data-back]').addEventListener('click', () => {
@@ -85,6 +95,7 @@ export function renderRace(root) {
       update({ race: { answers, classId, ranking: ranking.map((r) => r.race.id) } });
       showResult();
     });
+    focusHeading(root);
   }
 
   function showResult() {
@@ -107,7 +118,7 @@ export function renderRace(root) {
         <h1>🧬 De raad heeft gesproken</h1>
       </div>
       ${factionNote}
-      <section class="card reveal" style="--cc:${c.color}">
+      <section class="card reveal" style="${classVars(c)}">
         <p class="eyebrow">Jouw combinatie</p>
         <div class="reveal-icon" aria-hidden="true">${best.race.icon}${c.icon}</div>
         <h2 class="class-name">${esc(comboName(best.race.id, classId))}</h2>
@@ -138,7 +149,7 @@ export function renderRace(root) {
       <section class="card">
         <h3>Andere class proberen?</h3>
         <div class="chip-grid">
-          ${CLASSES.map((x) => `<button class="chip ${x.id === classId ? 'chosen' : ''}" data-c="${x.id}" style="--cc:${x.color}">${x.icon} ${esc(x.name)}</button>`).join('')}
+          ${CLASSES.map((x) => `<button class="chip ${x.id === classId ? 'chosen' : ''}" data-c="${x.id}" aria-pressed="${x.id === classId}" style="--cc:${x.color}">${x.icon} ${esc(x.name)}</button>`).join('')}
         </div>
       </section>
 
@@ -158,10 +169,13 @@ export function renderRace(root) {
     root.querySelector('[data-redo]').addEventListener('click', () => {
       step = 0;
       answers = {};
+      classId = testBest();
       showStep();
     });
+    focusHeading(root);
   }
 
   if (getState().race) showResult();
   else showStep();
+  return () => clearTimeout(timer);
 }

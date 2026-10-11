@@ -2,6 +2,8 @@
 
 Een installeerbare web-app (PWA) die je helpt kiezen welk **ras** en welke **class** je gaat spelen in **World of Warcraft: Forever** (launch 4 november 2026). Volledig in het Nederlands, werkt offline en heeft geen account of server nodig.
 
+**▶ Open de app: https://oscardillewaard-ai.github.io/ForeverChoser/**
+
 ## Wat zit erin
 
 | Onderdeel | Wat het doet |
@@ -27,10 +29,9 @@ Na de eerste keer laden werkt de app ook offline. Voortgang wordt alleen lokaal 
 
 De app bestaat uit statische bestanden zonder build-stap.
 
-1. Merge deze branch naar `main`.
-2. Ga in GitHub naar **Settings → Pages**.
-3. Kies bij *Source* **Deploy from a branch**, branch **`main`**, map **`/ (root)`**.
-4. Na een minuut staat de app op `https://oscardillewaard-ai.github.io/ForeverChoser/`.
+1. Zet wijzigingen op `main` (via een pull request).
+2. In GitHub staat **Settings → Pages** op *Deploy from a branch*, branch **`main`**, map **`/ (root)`**.
+3. Na elke push naar `main` bouwt GitHub de site opnieuw; na een minuut staat de nieuwe versie op `https://oscardillewaard-ai.github.io/ForeverChoser/`.
 
 Alle paden zijn relatief, dus de app werkt ook in die submap.
 

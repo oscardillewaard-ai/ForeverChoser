@@ -30,7 +30,7 @@ Een addon voor **World of Warcraft: Forever** die je character heel af en toe ee
 
 - **Alleen jij hoort het geluid.** Addons kunnen geen geluid naar andere spelers sturen. Wil je dat je groep het ook merkt, zet dan de emote aan.
 - Het geluid loopt via het Master-kanaal, dus het speelt ook als je effectgeluiden uit hebt staan.
-- De vijf geluidjes zijn zelf gesynthetiseerd: geen opnames, geen rechtenproblemen.
+- Er zitten 11 echte scheetopnames in. Ze zijn bijgeknipt, omgezet naar mono-OGG en even hard gemaakt.
 
 ## Interface-versie
 
@@ -41,3 +41,21 @@ In `Brrraaaappp.toc` staat `## Interface: 16001` (WoW Forever 1.60.1, volgens ad
 ```
 
 Zet het getal dat je ziet achter `## Interface:` in de TOC.
+
+## Geluiden
+
+Alle geluiden komen van [freesound.org](https://freesound.org). Controleer bij elk geluid de licentie op de pagina voordat je de addon publiek deelt. Staat er CC-BY, dan moet de maker hieronder genoemd blijven.
+
+| Bestand | Origineel | Maker |
+|---|---|---|
+| `timtube_fart3.ogg` | [fart-3](https://freesound.org/s/61055/) | timtube |
+| `dual_fart.ogg` | [dual fart](https://freesound.org/s/80388/) | ifartinurgeneraldirection |
+| `bad_chili_fart.ogg` | [bad chili fart](https://freesound.org/s/94989/) | (verwijderde gebruiker) |
+| `zippi1_fart5.ogg` | [fart5](https://freesound.org/s/27138/) | zippi1 |
+| `smokevhstapes_fart5.ogg` | [fart5](https://freesound.org/s/260961/) | smokevhstapes |
+| `aetherzip_fart_long.ogg` | [fart long](https://freesound.org/s/691978/) | aetherzip |
+| `teddyferguson_fart.ogg` | [fart](https://freesound.org/s/402569/) | teddyferguson |
+| `breviceps_fart3.ogg` | [fart 3](https://freesound.org/s/446000/) | breviceps |
+| `nasty_fart.ogg` | [nasty fart](https://freesound.org/s/645339/) | samsterbirdies |
+| `frenkfurth_fart50.ogg` | [fart sound 50](https://freesound.org/s/663636/) | frenkfurth |
+| `bassimat_fart005.ogg` | [fart 005](https://freesound.org/s/840755/) | bassimat |

@@ -5,7 +5,12 @@
 
 local ADDON, ns = ...
 local SOUND_PATH = "Interface\\AddOns\\" .. ADDON .. "\\sounds\\"
-local SOUNDS = { "scheet1", "scheet2", "scheet3", "scheet4", "scheet5" }
+-- Echte opnames van freesound.org; zie de README voor makers en links.
+local SOUNDS = {
+  "timtube_fart3", "dual_fart", "bad_chili_fart", "zippi1_fart5",
+  "smokevhstapes_fart5", "aetherzip_fart_long", "teddyferguson_fart",
+  "breviceps_fart3", "nasty_fart", "frenkfurth_fart50", "bassimat_fart005",
+}
 
 local DEFAULTS = {
   enabled   = true,

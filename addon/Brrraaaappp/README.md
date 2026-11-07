@@ -20,6 +20,7 @@ Een addon voor **World of Warcraft: Forever** die je character heel af en toe ee
 | `/brrraaaappp aan` / `uit` | Addon aan- of uitzetten |
 | `/brrraaaappp tijd 5 20` | Wachttijd tussen 5 en 20 minuten |
 | `/brrraaaappp emote` | Doet ook de echte `/fart`-emote. **Andere spelers zien die!** |
+| `/brrraaaappp zin` | Smerige zin bij elke scheet, passend bij je race en class (alleen jij ziet hem) |
 | `/brrraaaappp combat` | Wel of niet tijdens gevechten |
 | `/brrraaaappp status` | Huidige instellingen |
 

@@ -3,7 +3,7 @@
 -- hoorbaar (addons kunnen geen geluid naar andere spelers sturen). Wil je dat
 -- anderen het ook merken, zet dan de /fart-emote aan.
 
-local ADDON = ...
+local ADDON, ns = ...
 local SOUND_PATH = "Interface\\AddOns\\" .. ADDON .. "\\sounds\\"
 local SOUNDS = { "scheet1", "scheet2", "scheet3", "scheet4", "scheet5" }
 
@@ -13,17 +13,33 @@ local DEFAULTS = {
   maxMinutes = 30,   -- langste wachttijd tussen scheten
   emote     = false, -- ook de echte /fart-emote doen (zichtbaar voor anderen)
   inCombat  = true,  -- ook tijdens gevechten
+  zin       = true,  -- smerige zin in je chat (alleen jij ziet die)
   channel   = "Master",
 }
 
-local LINES = {
-  "Je voelt een rommeling in je ingewanden...",
-  "Er ontsnapt wat arcane energie.",
-  "Dat was de wind. De wind van Durotar.",
-  "Niemand heeft het gehoord. Toch?",
-  "Je Hearthstone trilt ervan.",
-  "Een kritieke treffer op de omgeving.",
-}
+-- Kiest een smerige zin die past bij je race of class (zie Lines.lua).
+local function pickLine()
+  local pools = {}
+  local _, raceFile = UnitRace("player")
+  local _, classFile = UnitClass("player")
+  local raceLines = raceFile and ns.RACE_LINES[raceFile]
+  if not raceLines and raceFile and strfind(strlower(raceFile), "sky") then
+    raceLines = ns.SKYBORNE_LINES
+  end
+  if raceLines then table.insert(pools, raceLines) end
+  if classFile and ns.CLASS_LINES[classFile] then table.insert(pools, ns.CLASS_LINES[classFile]) end
+  if #pools == 0 then table.insert(pools, ns.GENERIC_LINES) end
+  local pool = pools[math.random(#pools)]
+  return pool[math.random(#pool)], classFile
+end
+
+local function classColor(classFile)
+  local c = classFile and RAID_CLASS_COLORS and RAID_CLASS_COLORS[classFile]
+  if c then
+    return string.format("|cff%02x%02x%02x", math.floor(c.r * 255), math.floor(c.g * 255), math.floor(c.b * 255))
+  end
+  return "|cffffd100"
+end
 
 local db
 local timerGen = 0 -- verhoogt bij elke herplanning, zodat oude timers niets meer doen
@@ -40,8 +56,10 @@ local function playFart(force)
   PlaySoundFile(SOUND_PATH .. file .. ".ogg", db.channel)
   if db.emote then
     DoEmote("FART")
-  elseif math.random() < 0.3 then
-    msg(LINES[math.random(#LINES)])
+  end
+  if db.zin then
+    local line, classFile = pickLine()
+    msg(classColor(classFile) .. line .. "|r")
   end
   return true
 end
@@ -68,10 +86,11 @@ schedule = function()
 end
 
 local function status()
-  msg(string.format("%s | elke %d-%d min | emote: %s | in combat: %s",
+  msg(string.format("%s | elke %d-%d min | emote: %s | zin: %s | in combat: %s",
     db.enabled and "|cff00ff00aan|r" or "|cffff0000uit|r",
     db.minMinutes, db.maxMinutes,
     db.emote and "aan" or "uit",
+    db.zin and "aan" or "uit",
     db.inCombat and "ja" or "nee"))
 end
 
@@ -81,6 +100,7 @@ local function help()
   msg("/brrraaaappp nu - meteen een scheetje (testen)")
   msg("/brrraaaappp tijd <min> <max> - wachttijd in minuten, bv. /brrraaaappp tijd 5 20")
   msg("/brrraaaappp emote - /fart-emote aan/uit (anderen zien die!)")
+  msg("/brrraaaappp zin - smerige race/class-zin aan/uit")
   msg("/brrraaaappp combat - wel/niet tijdens gevechten")
   msg("/brrraaaappp status - huidige instellingen")
 end
@@ -105,6 +125,8 @@ SlashCmdList.BRRRAAAAPPP = function(input)
     end
   elseif cmd == "emote" then
     db.emote = not db.emote; status()
+  elseif cmd == "zin" then
+    db.zin = not db.zin; status()
   elseif cmd == "combat" then
     db.inCombat = not db.inCombat; status()
   elseif cmd == "status" then

@@ -2,7 +2,8 @@
 ## Title: Brrraaaappp
 ## Notes: Laat je character heel af en toe een scheetje laten. Typ /brrraaaappp voor opties.
 ## Author: oscardillewaard-ai
-## Version: 1.0.0
+## Version: 1.1.0
 ## SavedVariables: BrrraaaapppDB
 
+Lines.lua
 Brrraaaappp.lua

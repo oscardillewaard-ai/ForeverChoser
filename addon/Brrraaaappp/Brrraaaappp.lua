@@ -1,4 +1,4 @@
--- Fartseer: "I have foreseen... a fart."
+-- Brrraaaappp: wanneer de natuur roept, roept ze luid.
 -- Speelt heel af en toe een scheetgeluidje af. Het geluid is alleen voor jou
 -- hoorbaar (addons kunnen geen geluid naar andere spelers sturen). Wil je dat
 -- anderen het ook merken, zet dan de /fart-emote aan.
@@ -29,7 +29,7 @@ local db
 local timerGen = 0 -- verhoogt bij elke herplanning, zodat oude timers niets meer doen
 
 local function msg(text)
-  DEFAULT_CHAT_FRAME:AddMessage("|cff9acd32Fartseer|r: " .. text)
+  DEFAULT_CHAT_FRAME:AddMessage("|cff9acd32Brrraaaappp|r: " .. text)
 end
 
 local function playFart(force)
@@ -77,17 +77,17 @@ end
 
 local function help()
   msg("commando's:")
-  msg("/fartseer aan | uit - addon aan- of uitzetten")
-  msg("/fartseer nu - meteen een scheetje (testen)")
-  msg("/fartseer tijd <min> <max> - wachttijd in minuten, bv. /fartseer tijd 5 20")
-  msg("/fartseer emote - /fart-emote aan/uit (anderen zien die!)")
-  msg("/fartseer combat - wel/niet tijdens gevechten")
-  msg("/fartseer status - huidige instellingen")
+  msg("/brrraaaappp aan | uit - addon aan- of uitzetten")
+  msg("/brrraaaappp nu - meteen een scheetje (testen)")
+  msg("/brrraaaappp tijd <min> <max> - wachttijd in minuten, bv. /brrraaaappp tijd 5 20")
+  msg("/brrraaaappp emote - /fart-emote aan/uit (anderen zien die!)")
+  msg("/brrraaaappp combat - wel/niet tijdens gevechten")
+  msg("/brrraaaappp status - huidige instellingen")
 end
 
-SLASH_FARTSEER1 = "/fartseer"
-SLASH_FARTSEER2 = "/fs"
-SlashCmdList.FARTSEER = function(input)
+SLASH_BRRRAAAAPPP1 = "/brrraaaappp"
+SLASH_BRRRAAAAPPP2 = "/brap"
+SlashCmdList.BRRRAAAAPPP = function(input)
   local cmd, a, b = strsplit(" ", strlower(strtrim(input or "")))
   if cmd == "aan" or cmd == "on" then
     db.enabled = true; schedule(); status()
@@ -101,7 +101,7 @@ SlashCmdList.FARTSEER = function(input)
       db.minMinutes, db.maxMinutes = math.floor(lo), math.floor(hi)
       schedule(); status()
     else
-      msg("gebruik: /fartseer tijd <min> <max>, met min >= 1 en max >= min")
+      msg("gebruik: /brrraaaappp tijd <min> <max>, met min >= 1 en max >= min")
     end
   elseif cmd == "emote" then
     db.emote = not db.emote; status()
@@ -118,11 +118,11 @@ local frame = CreateFrame("Frame")
 frame:RegisterEvent("ADDON_LOADED")
 frame:SetScript("OnEvent", function(self, event, name)
   if name ~= ADDON then return end
-  FartseerDB = FartseerDB or {}
+  BrrraaaapppDB = BrrraaaapppDB or {}
   for k, v in pairs(DEFAULTS) do
-    if FartseerDB[k] == nil then FartseerDB[k] = v end
+    if BrrraaaapppDB[k] == nil then BrrraaaapppDB[k] = v end
   end
-  db = FartseerDB
+  db = BrrraaaapppDB
   schedule()
   self:UnregisterEvent("ADDON_LOADED")
 end)

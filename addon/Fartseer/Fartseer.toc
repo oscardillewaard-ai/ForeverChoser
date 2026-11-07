@@ -1,8 +1,0 @@
-## Interface: 11507
-## Title: Fartseer
-## Notes: Laat je character heel af en toe een scheetje laten. Typ /fartseer voor opties.
-## Author: oscardillewaard-ai
-## Version: 1.0.0
-## SavedVariables: FartseerDB
-
-Fartseer.lua

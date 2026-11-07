@@ -33,7 +33,7 @@ Een addon voor **World of Warcraft: Forever** die je character heel af en toe ee
 
 ## Interface-versie
 
-In `Brrraaaappp.toc` staat `## Interface: 11507` (Classic Era). Het precieze getal voor de WoW Forever-client is nog niet gecontroleerd. Typ in het spel:
+In `Brrraaaappp.toc` staat `## Interface: 16001` (WoW Forever 1.60.1, volgens addon-gidsen en CurseForge-bestandsnamen). Staat de addon na een patch op "Incompatible" of "out of date"? Typ dan in het spel:
 
 ```
 /dump select(4, GetBuildInfo())

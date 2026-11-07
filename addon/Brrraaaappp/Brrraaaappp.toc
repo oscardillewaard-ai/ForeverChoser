@@ -1,4 +1,4 @@
-## Interface: 11507
+## Interface: 16001
 ## Title: Brrraaaappp
 ## Notes: Laat je character heel af en toe een scheetje laten. Typ /brrraaaappp voor opties.
 ## Author: oscardillewaard-ai

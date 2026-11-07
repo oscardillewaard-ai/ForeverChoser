@@ -19,6 +19,7 @@ local DEFAULTS = {
   emote     = false, -- ook de echte /fart-emote doen (zichtbaar voor anderen)
   inCombat  = true,  -- ook tijdens gevechten
   zin       = true,  -- smerige zin in je chat (alleen jij ziet die)
+  rook      = true,  -- bruine rookwolk over je scherm (alleen jij ziet die)
   channel   = "Master",
 }
 
@@ -59,6 +60,9 @@ local function playFart(force)
   end
   local file = SOUNDS[math.random(#SOUNDS)]
   PlaySoundFile(SOUND_PATH .. file .. ".ogg", db.channel)
+  if db.rook and ns.PlaySmoke then
+    ns.PlaySmoke()
+  end
   if db.emote then
     DoEmote("FART")
   end
@@ -91,11 +95,12 @@ schedule = function()
 end
 
 local function status()
-  msg(string.format("%s | elke %d-%d min | emote: %s | zin: %s | in combat: %s",
+  msg(string.format("%s | elke %d-%d min | emote: %s | zin: %s | rook: %s | in combat: %s",
     db.enabled and "|cff00ff00aan|r" or "|cffff0000uit|r",
     db.minMinutes, db.maxMinutes,
     db.emote and "aan" or "uit",
     db.zin and "aan" or "uit",
+    db.rook and "aan" or "uit",
     db.inCombat and "ja" or "nee"))
 end
 
@@ -106,6 +111,7 @@ local function help()
   msg("/brrraaaappp tijd <min> <max> - wachttijd in minuten, bv. /brrraaaappp tijd 5 20")
   msg("/brrraaaappp emote - /fart-emote aan/uit (anderen zien die!)")
   msg("/brrraaaappp zin - smerige race/class-zin aan/uit")
+  msg("/brrraaaappp rook - bruine rookwolk over je scherm aan/uit")
   msg("/brrraaaappp combat - wel/niet tijdens gevechten")
   msg("/brrraaaappp status - huidige instellingen")
 end
@@ -132,6 +138,8 @@ SlashCmdList.BRRRAAAAPPP = function(input)
     db.emote = not db.emote; status()
   elseif cmd == "zin" then
     db.zin = not db.zin; status()
+  elseif cmd == "rook" or cmd == "smoke" then
+    db.rook = not db.rook; status()
   elseif cmd == "combat" then
     db.inCombat = not db.inCombat; status()
   elseif cmd == "status" then

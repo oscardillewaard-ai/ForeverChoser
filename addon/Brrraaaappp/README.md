@@ -6,10 +6,11 @@ Een addon voor **World of Warcraft: Forever** die je character heel af en toe ee
 
 ## Installeren
 
-1. Kopieer de map `Brrraaaappp` (met `Brrraaaappp.toc`, `Brrraaaappp.lua` en `sounds/`) naar
+1. Kopieer de hele map `Brrraaaappp` (met alle `.lua`-bestanden, de `.toc` en de mappen `sounds/` en `media/`) naar
    `World of Warcraft\_forever_\Interface\AddOns\`.
    De map moet precies `Brrraaaappp` heten.
 2. Start het spel en zet bij het character-scherm onder **AddOns** een vinkje bij Brrraaaappp.
+   Heb je een update geïnstalleerd met nieuwe bestanden? Herstart WoW dan helemaal: een `/reload` ziet nieuwe bestanden niet.
 3. Staat er "out of date"? Vink dan **Load out of date AddOns** aan, of zet het juiste getal in de TOC (zie hieronder).
 
 ## Commando's
@@ -21,6 +22,7 @@ Een addon voor **World of Warcraft: Forever** die je character heel af en toe ee
 | `/brrraaaappp tijd 5 20` | Wachttijd tussen 5 en 20 minuten |
 | `/brrraaaappp emote` | Doet ook de echte `/fart`-emote. **Andere spelers zien die!** |
 | `/brrraaaappp zin` | Smerige zin bij elke scheet, passend bij je race en class (alleen jij ziet hem) |
+| `/brrraaaappp rook` | Bruine rookwolk over je scherm bij elke scheet, aan/uit (alleen jij ziet hem) |
 | `/brrraaaappp combat` | Wel of niet tijdens gevechten |
 | `/brrraaaappp status` | Huidige instellingen |
 
@@ -31,6 +33,7 @@ Een addon voor **World of Warcraft: Forever** die je character heel af en toe ee
 - **Alleen jij hoort het geluid.** Addons kunnen geen geluid naar andere spelers sturen. Wil je dat je groep het ook merkt, zet dan de emote aan.
 - Het geluid loopt via het Master-kanaal, dus het speelt ook als je effectgeluiden uit hebt staan.
 - Er zitten 11 echte scheetopnames in. Ze zijn bijgeknipt, omgezet naar mono-OGG en even hard gemaakt.
+- **De rook** duurt ongeveer 4,5 seconden: 16 bruine wolkjes komen uit het midden van je scherm (waar je character meestal staat), drijven omhoog en vervagen, en de randen van je scherm kleuren even bruin. De rook ligt onder je interface, dus je actiebalken en chat blijven leesbaar. De rooktexturen in `media/` zijn zelf gegenereerd, dus daar zitten geen rechten van anderen op.
 
 ## Interface-versie
 

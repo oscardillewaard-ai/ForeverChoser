@@ -7,7 +7,7 @@ Een addon voor **World of Warcraft: Forever** die je character heel af en toe ee
 ## Installeren
 
 1. Kopieer de map `Brrraaaappp` (met `Brrraaaappp.toc`, `Brrraaaappp.lua` en `sounds/`) naar
-   `World of Warcraft\_<versie>_\Interface\AddOns\`.
+   `World of Warcraft\_forever_\Interface\AddOns\`.
    De map moet precies `Brrraaaappp` heten.
 2. Start het spel en zet bij het character-scherm onder **AddOns** een vinkje bij Brrraaaappp.
 3. Staat er "out of date"? Vink dan **Load out of date AddOns** aan, of zet het juiste getal in de TOC (zie hieronder).

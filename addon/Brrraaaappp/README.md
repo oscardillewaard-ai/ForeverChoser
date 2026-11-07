@@ -28,6 +28,8 @@ Een addon voor **World of Warcraft: Forever** die je character heel af en toe ee
 
 `/brap` werkt ook als afkorting. Instellingen worden per account bewaard.
 
+**Wanneer komt de eerste scheet?** De timer start bij het inloggen. De eerste automatische scheet komt dus pas na 10 tot 30 minuten, en bij elke `/reload` of nieuwe login begint de wachttijd opnieuw. Met `/brap status` zie je over hoeveel minuten de volgende komt. Snel testen? Zet `/brap tijd 1 2` en wacht een minuutje (zet hem daarna terug met `/brap tijd 10 30`).
+
 ## Goed om te weten
 
 - **Alleen jij hoort het geluid.** Addons kunnen geen geluid naar andere spelers sturen. Wil je dat je groep het ook merkt, zet dan de emote aan.

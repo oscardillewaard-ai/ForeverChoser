@@ -49,6 +49,7 @@ end
 
 local db
 local timerGen = 0 -- verhoogt bij elke herplanning, zodat oude timers niets meer doen
+local nextFartAt   -- GetTime() waarop de volgende automatische scheet komt
 
 local function msg(text)
   DEFAULT_CHAT_FRAME:AddMessage("|cff9acd32Brrraaaappp|r: " .. text)
@@ -76,14 +77,17 @@ end
 local schedule
 schedule = function()
   timerGen = timerGen + 1
+  nextFartAt = nil
   if not db.enabled then return end
   local myGen = timerGen
   local lo, hi = db.minMinutes * 60, db.maxMinutes * 60
   local delay = lo + math.random() * (hi - lo)
+  nextFartAt = GetTime() + delay
   C_Timer.After(delay, function()
     if myGen ~= timerGen or not db.enabled then return end
     if not playFart(false) then
       -- in combat en dat mag niet: probeer het over 20 seconden opnieuw
+      nextFartAt = GetTime() + 20
       C_Timer.After(20, function()
         if myGen == timerGen then playFart(false) end
         if myGen == timerGen then schedule() end
@@ -94,10 +98,20 @@ schedule = function()
   end)
 end
 
+local function nextText()
+  if not db.enabled or not nextFartAt then return "" end
+  local left = math.max(0, nextFartAt - GetTime())
+  if left < 60 then
+    return string.format(" | volgende over %d s", math.floor(left))
+  end
+  return string.format(" | volgende over %d min", math.ceil(left / 60))
+end
+
 local function status()
-  msg(string.format("%s | elke %d-%d min | emote: %s | zin: %s | rook: %s | in combat: %s",
+  msg(string.format("%s | elke %d-%d min%s | emote: %s | zin: %s | rook: %s | in combat: %s",
     db.enabled and "|cff00ff00aan|r" or "|cffff0000uit|r",
     db.minMinutes, db.maxMinutes,
+    nextText(),
     db.emote and "aan" or "uit",
     db.zin and "aan" or "uit",
     db.rook and "aan" or "uit",

@@ -19,9 +19,9 @@ local DEFAULTS = {
   minMinutes = 10,
   maxMinutes = 30,
   inCombat = true,
-  chatLine = true,     -- gross line in your chat (only you see it)
+  chatLine = true,     -- gross race/class fart text in chat
   smoke = true,        -- brown smoke cloud (only you see it)
-  emote = true,        -- /e emote (other players see it!)
+  emote = true,        -- send that text as a /e emote (other players see it!)
   others = true,       -- other characters fart too
   othersMin = 5,
   othersMax = 15,
@@ -92,24 +92,31 @@ local function pickLine()
   end
   if raceLines then pools[#pools + 1] = raceLines end
   if classFile and ns.CLASS_LINES[classFile] then pools[#pools + 1] = ns.CLASS_LINES[classFile] end
-  if #pools == 0 then pools[1] = ns.GENERIC_LINES end
+  if #pools == 0 or math.random() < 0.15 then pools[#pools + 1] = ns.GENERIC_LINES end
   local pool = pools[math.random(#pools)]
-  return pool[math.random(#pool)], classFile
+  return pool[math.random(#pool)]
 end
 
-function ns.ClassColor(classFile)
-  local c = classFile and RAID_CLASS_COLORS and RAID_CLASS_COLORS[classFile]
-  if c then
-    return string.format("|cff%02x%02x%02x", math.floor(c.r * 255), math.floor(c.g * 255), math.floor(c.b * 255))
-  end
-  return "|cffffd100"
+-- Shows the line like an emote, but only in your own chat.
+local function localEmote(line)
+  local name = UnitName("player") or "You"
+  local info = ChatTypeInfo and ChatTypeInfo["EMOTE"]
+  local r, g, b = 1, 0.5, 0.25
+  if info then r, g, b = info.r, info.g, info.b end
+  DEFAULT_CHAT_FRAME:AddMessage(name .. " " .. line, r, g, b)
 end
 
-local function sendEmote()
+-- One line per fart: as a real /e emote when that's on (and not on
+-- cooldown), otherwise only in your own chat.
+local function fartText()
+  local line = pickLine()
   local now = GetTime()
-  if now - lastEmote < EMOTE_COOLDOWN then return end
-  lastEmote = now
-  SendChatMessage(ns.EMOTE_LINES[math.random(#ns.EMOTE_LINES)], "EMOTE")
+  if db.emote and now - lastEmote >= EMOTE_COOLDOWN then
+    lastEmote = now
+    SendChatMessage(line, "EMOTE")
+  else
+    localEmote(line)
+  end
 end
 
 -- Farting -----------------------------------------------------------------
@@ -120,11 +127,7 @@ local function playFart(force)
   end
   playOwnSound()
   if db.smoke and ns.PlaySmoke then ns.PlaySmoke() end
-  if db.emote then sendEmote() end
-  if db.chatLine then
-    local line, classFile = pickLine()
-    msg(ns.ClassColor(classFile) .. line .. "|r")
-  end
+  if db.chatLine then fartText() end
   return true
 end
 
@@ -182,6 +185,8 @@ local function help()
   msg("/brap now - fart right now")
   msg("/brap on | off - automatic farts on or off")
   msg("/brap status - show when the next fart comes")
+  msg("/brap blame - make someone nearby fart")
+  msg("/brap debug - show who the addon can find nearby")
 end
 
 SLASH_BRRRAAAAPPP1 = "/brap"
@@ -198,6 +203,12 @@ SlashCmdList.BRRRAAAAPPP = function(input)
     db.enabled = false; schedule(); status()
   elseif cmd == "status" then
     status()
+  elseif cmd == "blame" then
+    local ok, found = pcall(ns.BlameSomeone)
+    if not ok then msg("|cffff4040Error:|r " .. tostring(found)) elseif not found then msg("Nobody nearby to blame.") end
+  elseif cmd == "debug" then
+    local ok, err = pcall(ns.DebugOthers)
+    if not ok then msg("|cffff4040Error:|r " .. tostring(err)) end
   else
     help()
   end

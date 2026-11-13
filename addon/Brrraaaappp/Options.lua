@@ -148,9 +148,9 @@ local function createPanel()
   header(f, "Your farts", -64)
   check(f, "Automatic farts", "Fart every now and then, at a random moment.", "enabled", 20, -84, reschedule)
   check(f, "Also during combat", "Allow farts (yours and others') while you're in combat.", "inCombat", 240, -84)
-  check(f, "Gross chat line", "A disgusting line based on your race and class. Only you see it.", "chatLine", 20, -110)
+  check(f, "Fart text", "A disgusting line based on your race and class, shown like an emote: \"<you> farts, and ...\".", "chatLine", 20, -110)
   check(f, "Brown smoke cloud", "A brown cloud over your screen. Only you see it.", "smoke", 240, -110)
-  check(f, "/e emote", "Sends an emote like '<you> lets one rip and blames the nearest gnome.' OTHER PLAYERS SEE THIS.", "emote", 20, -136)
+  check(f, "Send it as /e emote", "Sends the fart text as a real /e emote, so OTHER PLAYERS SEE IT. Off: only you see it. At most one emote every 20 seconds.", "emote", 20, -136)
   local own = {}
   local fixOwn = pairFix("minMinutes", "maxMinutes", own, reschedule)
   own.min = slider(f, "Shortest wait", "minMinutes", 1, 60, 26, -184, fixOwn)
@@ -169,7 +169,12 @@ local function createPanel()
   oth.min = slider(f, "Shortest wait", "othersMin", 1, 60, 26, -346, fixOthers)
   oth.max = slider(f, "Longest wait", "othersMax", 1, 120, 246, -346, fixOthers)
   button(f, "Blame someone now", 150, 20, -374, function()
-    if not ns.BlameSomeone() then ns.msg("Nobody nearby to blame. Find some company, or turn on nameplates (V).") end
+    local ok, found = pcall(ns.BlameSomeone)
+    if not ok then
+      ns.msg("|cffff4040Error:|r " .. tostring(found) .. " (please report this)")
+    elseif not found then
+      ns.msg("Nobody nearby to blame. Find some company, or turn on nameplates (V). Type /brap debug to see who I can find.")
+    end
   end)
 
   -- Sounds

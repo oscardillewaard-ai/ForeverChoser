@@ -24,7 +24,7 @@ But something was missing. Something deeply, fundamentally *real*.
 
 🤢 **Gross flavor text written for your race and class.** Your Dwarf's beard catches fire from the fumes. Your Undead loses a piece of intestine and puts it back. Your Rogue's Stealth breaks because everyone can smell you. Your Mage blinks away, but the cloud stays behind. Every race and class has its own lines, including Skyborne.
 
-🎭 **Share it with the world (optional).** Your character can do an `/e` emote, so everyone nearby reads things like *"Grubnak lets one rip and blames the nearest gnome."* You can switch this off with one click if you value your guild membership.
+🎭 **Share it with the world (optional).** The gross line goes out as a real `/e` emote, so everyone nearby reads *"Owa Tanka farts, and their tail swishes the stench around so nobody misses out."* You can switch this off with one click if you value your guild membership; then only you see it.
 
 🗺️ **Nobody is innocent.** Other characters fart too: players and NPCs around you, your group, your target, even your own pet. With **directional sound**: a kobold on your left farts in your left ear, and the troll far away on the right gives a faint toot in your right ear. A small brown cloud follows their nameplate. True 3D stink. Only you hear and see this, so you can quietly judge everyone.
 
@@ -38,6 +38,8 @@ But something was missing. Something deeply, fundamentally *real*.
 - `/brap now`: fart right now (for testing, or for comedic timing)
 - `/brap on` / `/brap off`: automatic farts on or off
 - `/brap status`: when is the next one coming?
+- `/brap blame`: make someone nearby fart
+- `/brap debug`: who can the addon find around you?
 
 ## FAQ
 

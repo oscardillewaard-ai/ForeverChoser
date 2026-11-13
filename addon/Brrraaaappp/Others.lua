@@ -85,22 +85,28 @@ local function candidates()
     seen[c.guid] = true
     list[#list + 1] = c
   end
-  local function addUnit(unit, plate)
+  local function addUnit(unit, plate, source)
     if not UnitExists(unit) or UnitIsUnit(unit, "player") or UnitIsDeadOrGhost(unit) then return end
-    add({ unit = unit, plate = plate, guid = UnitGUID(unit) })
+    add({ unit = unit, plate = plate, guid = UnitGUID(unit), source = source or unit })
   end
   if C_NamePlate and C_NamePlate.GetNamePlates then
     for _, plate in ipairs(C_NamePlate.GetNamePlates()) do
       local unit = plateUnit(plate)
-      if unit then addUnit(unit, plate) end
+      if unit then addUnit(unit, plate, "nameplate") end
     end
+  end
+  -- and by token, in case the nameplate frames don't carry their unit (other nameplate addons)
+  local getPlate = C_NamePlate and C_NamePlate.GetNamePlateForUnit
+  for i = 1, 40 do
+    local unit = "nameplate" .. i
+    if UnitExists(unit) then addUnit(unit, getPlate and getPlate(unit), "nameplate") end
   end
   local n = GetNumGroupMembers and GetNumGroupMembers() or 0
   if n > 0 then
     local raid = IsInRaid and IsInRaid()
     for i = 1, n do
       local unit = (raid and "raid" or "party") .. i
-      if UnitIsVisible(unit) then addUnit(unit) end
+      if UnitIsVisible(unit) then addUnit(unit, nil, "group") end
     end
   end
   for _, unit in ipairs(EXTRA_UNITS) do
@@ -111,7 +117,7 @@ local function candidates()
     if now - r.t > RECENT_SECONDS then
       recent[guid] = nil
     else
-      add({ guid = guid, name = r.name, tier = r.tier })
+      add({ guid = guid, name = r.name, tier = r.tier, source = "heard" })
     end
   end
   return list
@@ -121,7 +127,8 @@ local function otherFart(c)
   local db = ns.db
   local tier, pan, fx, fy = c.tier or 1, 0, nil, nil
   if c.unit then
-    local dist, mapPan = mapInfo(c.unit)
+    local dist, mapPan
+    if c.source == "group" then dist, mapPan = mapInfo(c.unit) end
     if dist then
       tier = tierFromDistance(dist)
       if not tier then return false end
@@ -140,12 +147,12 @@ local function otherFart(c)
 
   -- small cloud, only when we know where they are on screen
   if db.othersSmoke and fx and ns.PlaySmallSmoke then
-    local plate, guid, drop = c.plate, c.guid, CLOUD_DROP[tier]
+    local unit, plate, guid, drop = c.unit, c.plate, c.guid, CLOUD_DROP[tier]
     ns.PlaySmallSmoke(fx, fy - drop, CLOUD_SCALE[tier], function()
-      if not plate:IsShown() then return nil end
-      local unit = plateUnit(plate)
-      if not unit or UnitGUID(unit) ~= guid then return nil end
-      local x, y = platePos(plate)
+      if UnitGUID(unit) ~= guid then return nil end
+      local p = (C_NamePlate and C_NamePlate.GetNamePlateForUnit and C_NamePlate.GetNamePlateForUnit(unit)) or plate
+      if not p or not p:IsShown() then return nil end
+      local x, y = platePos(p)
       if x then return x, y - drop end
     end)
   end
@@ -160,6 +167,24 @@ local function otherFart(c)
     ns.msg("|cffd2b48c" .. line .. "|r")
   end
   return true
+end
+
+-- What the addon can see right now, for /brap debug.
+function ns.DebugOthers()
+  local list = candidates()
+  local counts = {}
+  for _, c in ipairs(list) do counts[c.source] = (counts[c.source] or 0) + 1 end
+  ns.msg(string.format("found %d nearby: %d by nameplate, %d in group, %d heard nearby, %d other (target, mouseover, pet)",
+    #list, counts.nameplate or 0, counts.group or 0, counts.heard or 0,
+    #list - (counts.nameplate or 0) - (counts.group or 0) - (counts.heard or 0)))
+  local plates = C_NamePlate and C_NamePlate.GetNamePlates and #C_NamePlate.GetNamePlates() or -1
+  ns.msg(string.format("nameplate frames: %d, others on: %s", plates, tostring(ns.db.others)))
+  for i = 1, math.min(#list, 5) do
+    local c = list[i]
+    local name = (c.unit and UnitName(c.unit)) or c.name or "?"
+    local where = c.plate and platePos(c.plate) and "on screen" or "no screen position"
+    ns.msg(string.format("- %s (%s, %s)", name, c.source, where))
+  end
 end
 
 -- Make a random nearby character fart now. Returns false if nobody is around.

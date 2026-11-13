@@ -14,8 +14,8 @@ A World of Warcraft: Forever addon that makes your character fart every now and 
 
 - **Your farts**: at a random moment, every 10-30 minutes by default (adjustable).
 - **Brown smoke cloud** over your screen for a few seconds. It sits below the UI, so your bars and chat stay readable.
-- **Gross chat line** based on your race and class. Only you see it.
-- **`/e` emote** such as "*Yourname lets one rip and blames the nearest gnome.*" Other players see this, so it can be switched off. Limited to one every 20 seconds.
+- **Gross fart text** based on your race and class, as an emote: "*Owa Tanka farts, and their tail swishes the stench around so nobody misses out.*"
+- **Sent as a real `/e` emote**, so other players see it. Switch that off and only you see the text. At most one emote every 20 seconds.
 - **Other characters fart too**: your group, your target, your pet and anyone who just did something near you (fighting, casting, `/say`, emotes). Group members sound from their direction and get quieter with distance. With nameplates on, everyone on screen gets a direction and a small cloud that follows their nameplate. Only you hear and see this.
 - **Your own fart sounds**: see below.
 - Settings window with everything on/off, also reachable from the game's AddOns options.
@@ -28,6 +28,8 @@ A World of Warcraft: Forever addon that makes your character fart every now and 
 | `/brap now` | Fart right now |
 | `/brap on` / `off` | Automatic farts on or off |
 | `/brap status` | Show when the next fart comes |
+| `/brap blame` | Make someone nearby fart |
+| `/brap debug` | Show who the addon can find nearby |
 
 `/brrraaaappp` works too.
 

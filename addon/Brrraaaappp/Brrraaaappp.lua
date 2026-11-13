@@ -25,14 +25,14 @@ local DEFAULTS = {
   others = true,       -- other characters fart too
   othersMin = 5,
   othersMax = 15,
-  othersMeet = 10,     -- % chance that someone you meet farts soon after
+  othersMeet = 5,      -- % chance that someone you meet farts soon after
   othersSmoke = true,
   othersChat = true,
   builtin = true,      -- use the built-in fart sounds
   custom = {},         -- your own sounds: file names or sound IDs
   channel = "Master",
 }
-local DB_VERSION = 2
+local DB_VERSION = 3
 local EMOTE_COOLDOWN = 20 -- seconds, so /brap now can't spam the chat
 
 local db
@@ -257,7 +257,7 @@ SlashCmdList.BRRRAAAAPPP = function(input)
   elseif cmd == "status" then
     status()
   elseif cmd == "blame" then
-    local ok, found = pcall(ns.BlameSomeone)
+    local ok, found = pcall(ns.BlameSomeone, true)
     if not ok then msg("|cffff4040Error:|r " .. tostring(found)) elseif not found then msg("Nobody nearby to blame.") end
   elseif cmd == "debug" then
     local ok, err = pcall(ns.DebugOthers)
@@ -276,6 +276,9 @@ local function migrate(saved)
     if saved.rook ~= nil then saved.smoke = saved.rook end
     saved.zin, saved.rook = nil, nil
     saved.emote = nil -- used to mean the built-in /fart emote; now the /e emote (default on)
+  end
+  if (saved.version or 0) < 3 and saved.othersMeet == 10 then
+    saved.othersMeet = 5 -- the old default; the new default is 5%
   end
   saved.version = DB_VERSION
 end

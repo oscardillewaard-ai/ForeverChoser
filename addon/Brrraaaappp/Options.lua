@@ -171,7 +171,7 @@ local function createPanel()
   oth.max = slider(f, "Longest wait", "othersMax", 1, 120, 246, -346, fixOthers)
   slider(f, "Chance when you meet someone", "othersMeet", 0, 50, 26, -398, nil, "%")
   button(f, "Blame someone now", 150, 260, -392, function()
-    local ok, found = pcall(ns.BlameSomeone)
+    local ok, found = pcall(ns.BlameSomeone, true)
     if not ok then
       ns.msg("|cffff4040Error:|r " .. tostring(found) .. " (please report this)")
     elseif not found then

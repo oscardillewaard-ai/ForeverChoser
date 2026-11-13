@@ -122,7 +122,15 @@ local function candidates()
   return list
 end
 
-local function otherFart(c)
+-- Automatic farts of others (timer and meeting) are always at least this far
+-- apart, whatever happens. Blame someone now (manual) ignores it.
+local MIN_GAP = 20
+local lastAutoFart = -math.huge
+
+local function otherFart(c, manual)
+  if not manual then
+    if GetTime() - lastAutoFart < MIN_GAP then return false end
+  end
   local db = ns.db
   local tier, pan = c.tier or 1, 0
   if c.unit then
@@ -184,11 +192,15 @@ function ns.DebugOthers()
 end
 
 -- Make a random nearby character fart now. Returns false if nobody is around.
-function ns.BlameSomeone()
+function ns.BlameSomeone(manual)
   local list = candidates()
   while #list > 0 do
     local i = math.random(#list)
-    if otherFart(list[i]) then return true end
+    if otherFart(list[i], manual) then
+      if not manual then lastAutoFart = GetTime() end
+      return true
+    end
+    if not manual and GetTime() - lastAutoFart < MIN_GAP then return false end
     table.remove(list, i)
   end
   return false
@@ -284,7 +296,7 @@ local function meet(guid, makeCandidate)
   C_Timer.After(MEET_DELAY_MIN + math.random() * (MEET_DELAY_MAX - MEET_DELAY_MIN), function()
     if not ns.db.others or (InCombatLockdown() and not ns.db.inCombat) then return end
     local c = makeCandidate()
-    if c then otherFart(c) end
+    if c and otherFart(c) then lastAutoFart = GetTime() end
   end)
 end
 ns.Meet = meet

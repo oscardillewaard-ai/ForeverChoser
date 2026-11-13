@@ -1,7 +1,10 @@
 -- Brrraaaappp: brown smoke clouds.
 -- A big cloud (with a brown screen edge) for your own farts, and small clouds
--- that follow other characters' nameplates. Smoke sits below the UI
+-- attached to other characters' nameplates. Smoke sits below the UI
 -- (strata BACKGROUND): it covers the world, your bars and chat stay readable.
+-- Nameplates can't be measured in WoW Forever ("restricted regions"), so a
+-- small cloud is anchored to the nameplate instead, and every size comes
+-- from UIParent, never from a frame anchored to a nameplate.
 local ADDON, ns = ...
 
 local MEDIA = "Interface\\AddOns\\" .. ADDON .. "\\media\\"
@@ -31,7 +34,6 @@ Smoke.__index = Smoke
 local function newSmoke(numPuffs, withVignette)
   local self = setmetatable({ puffs = {}, t = 0, duration = 0 }, Smoke)
   local f = CreateFrame("Frame", nil, UIParent)
-  f:SetAllPoints(UIParent)
   f:SetFrameStrata("BACKGROUND")
   f:Hide()
   self.frame = f
@@ -56,14 +58,30 @@ function Smoke:IsPlaying()
 end
 
 -- opts.x, opts.y: origin as a fraction of screen width / height (from bottom left)
+-- opts.anchor: optional region (a nameplate) to attach to instead; opts.drop is
+--   how far below its bottom the cloud starts, as a fraction of screen height
 -- opts.scale: 1 = full-size cloud; opts.life: lifetime multiplier
--- opts.follow: optional function returning a new x, y each frame (or nil)
+-- Returns false if the cloud couldn't be attached.
 function Smoke:Play(opts)
   local n = #self.puffs
-  self.ox, self.oy = opts.x, opts.y
+  local f = self.frame
+  local W, H = UIParent:GetWidth(), UIParent:GetHeight()
   self.scale = opts.scale or 1
-  self.follow = opts.follow
   self.t, self.duration = 0, 0
+  f:ClearAllPoints()
+  if opts.anchor then
+    local size = H * self.scale * 2
+    f:SetSize(size, size)
+    local ok = pcall(f.SetPoint, f, "CENTER", opts.anchor, "BOTTOM", 0, -(opts.drop or 0) * H)
+    if not ok then
+      f:Hide()
+      return false
+    end
+    self.ox, self.oy = 0, 0
+  else
+    f:SetAllPoints(UIParent)
+    self.ox, self.oy = (opts.x - 0.5) * W, (opts.y - 0.5) * H -- offset from the screen centre
+  end
   local lifeMul = opts.life or 1
   for i = 1, n do
     local p = self.puffs[i]
@@ -88,7 +106,8 @@ function Smoke:Play(opts)
     p.tex:Hide()
   end
   if self.vignette then self.vignette:SetAlpha(0) end
-  self.frame:Show()
+  f:Show()
+  return true
 end
 
 function Smoke:Update(elapsed)
@@ -98,11 +117,7 @@ function Smoke:Update(elapsed)
     self.frame:Hide()
     return
   end
-  if self.follow then
-    local fx, fy = self.follow()
-    if fx then self.ox, self.oy = fx, fy end
-  end
-  local W, H = self.frame:GetWidth(), self.frame:GetHeight()
+  local W, H = UIParent:GetWidth(), UIParent:GetHeight()
   local s = self.scale
   if self.vignette then
     local a
@@ -120,13 +135,13 @@ function Smoke:Update(elapsed)
       local u = age / p.life
       local e = easeOut(u)
       local size = (p.size0 + (p.size1 - p.size0) * e) * s * H
-      local x = (self.ox + p.jx * s) * W + p.dx * e * s * H
-      local y = (self.oy + p.jy * s + (p.dy * e + p.rise * u) * s) * H
+      local x = self.ox + p.jx * s * W + p.dx * e * s * H
+      local y = self.oy + (p.jy * s + (p.dy * e + p.rise * u) * s) * H
       local fadeIn = math.min(1, age / 0.25)
       local fadeOut = 1
       if u > 0.3 then fadeOut = (1 - (u - 0.3) / 0.7) ^ 1.4 end
       p.tex:ClearAllPoints()
-      p.tex:SetPoint("CENTER", self.frame, "BOTTOMLEFT", x, y)
+      p.tex:SetPoint("CENTER", self.frame, "CENTER", x, y)
       p.tex:SetSize(size, size)
       if p.tex.SetRotation then p.tex:SetRotation(p.rot0 + p.spin * age) end
       p.tex:SetAlpha(p.maxAlpha * fadeIn * fadeOut)
@@ -144,8 +159,9 @@ function ns.PlaySmoke()
   big:Play({ x = 0.5, y = 0.40, scale = 1 })
 end
 
--- Another character's fart: small cloud, optionally following their nameplate.
-function ns.PlaySmallSmoke(x, y, scale, follow)
+-- Another character's fart: small cloud attached to their nameplate.
+-- Returns false if WoW didn't allow attaching to it.
+function ns.PlaySmallSmoke(anchor, drop, scale)
   local pick
   for i = 1, #small do
     if not small[i]:IsPlaying() then pick = small[i]; break end
@@ -158,5 +174,5 @@ function ns.PlaySmallSmoke(x, y, scale, follow)
       pick = small[1]
     end
   end
-  pick:Play({ x = x, y = y, scale = scale, life = 0.75, follow = follow })
+  return pick:Play({ anchor = anchor, drop = drop, scale = scale, life = 0.75 })
 end

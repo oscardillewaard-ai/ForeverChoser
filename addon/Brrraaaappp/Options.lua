@@ -161,7 +161,7 @@ local function createPanel()
 
   -- Other characters
   header(f, "Other characters", -252)
-  check(f, "Others fart too", "Nearby characters fart sometimes: your group, your target, your pet and anyone who just did something near you. Sound comes from their direction when the game tells us where they are, quieter further away. With nameplates on (V) you also get the direction and a small cloud for everyone on screen. Only you hear and see this.", "others", 20, -272, rescheduleOthers)
+  check(f, "Others fart too", "Nearby characters fart sometimes: your group, your target, your pet and anyone who just did something near you. Quieter further away; group members sound from their direction. With nameplates on (V) more characters are found and they get a small cloud. Only you hear and see this.", "others", 20, -272, rescheduleOthers)
   check(f, "Small smoke cloud", "A small cloud at their nameplate (only for characters with a visible nameplate).", "othersSmoke", 240, -272)
   check(f, "Chat line", "Tells you who it was. Only you see it.", "othersChat", 20, -298)
   local oth = {}

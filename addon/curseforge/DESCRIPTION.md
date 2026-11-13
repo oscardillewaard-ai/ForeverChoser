@@ -26,7 +26,7 @@ But something was missing. Something deeply, fundamentally *real*.
 
 🎭 **Share it with the world (optional).** The gross line goes out as a real `/e` emote, so everyone nearby reads *"Owa Tanka farts, and their tail swishes the stench around so nobody misses out."* You can switch this off with one click if you value your guild membership; then only you see it.
 
-🗺️ **Nobody is innocent.** Other characters fart too: players and NPCs around you, your group, your target, even your own pet. With **directional sound**: a kobold on your left farts in your left ear, and the troll far away on the right gives a faint toot in your right ear. A small brown cloud follows their nameplate. True 3D stink. Only you hear and see this, so you can quietly judge everyone.
+🗺️ **Nobody is innocent.** Other characters fart too: players and NPCs around you, your group, your target, even your own pet. Close by it's loud, far away it's a faint toot, and your group members fart from the right direction: the warrior on your left farts in your left ear. With nameplates on, a small brown cloud rises above whoever did it. True 3D stink. Only you hear and see this, so you can quietly judge everyone.
 
 🎙️ **Bring your own farts.** Put your own `.ogg` or `.mp3` files in a folder, add them in the settings, and your character farts with *your* sound. We don't ask where you got it.
 
@@ -47,7 +47,7 @@ But something was missing. Something deeply, fundamentally *real*.
 No. Addons can't send sound to other players. Only the optional `/e` emote is visible to others. The smoke and the gross lines are just for you.
 
 **Do I need nameplates?**
-No. Brrraaaappp hears everyone who's busy around you: fighting, casting, chatting. But it can only *see* where they are through their nameplate. Press `V` to turn nameplates on and everyone on your screen gets directional sound and their own little cloud. Your group members always sound from the right direction (outside instances).
+No. Brrraaaappp hears everyone who's busy around you: fighting, casting, chatting. Press `V` to turn nameplates on and it finds even more of them, and everyone with a nameplate gets their own little cloud. Your group members always sound from the right direction (outside instances).
 
 **It's been five minutes and nothing happened!**
 Patience. A good fart can't be rushed. By default it comes every 10 to 30 minutes. Check `/brap status`, or set a shorter wait in `/brap`.

@@ -1,8 +1,9 @@
 -- Brrraaaappp: other characters fart too (only on your screen and speakers).
 --
 -- Where we find them, best first:
--- 1. Visible nameplates: direction from where the nameplate is on screen,
---    volume from distance, and a small cloud that follows the nameplate.
+-- 1. Visible nameplates: rough distance, and a small cloud attached to the
+--    nameplate. WoW Forever doesn't let addons measure nameplates ("restricted
+--    regions"), so we never ask where they are, and they sound from the middle.
 -- 2. Group members: direction and distance from their map position and the
 --    way you're facing (outside instances, where the game allows it).
 -- 3. Target, mouseover, target's target and your pet: rough distance, middle.
@@ -31,14 +32,7 @@ local function plateUnit(plate)
   return plate.namePlateUnitToken or (plate.UnitFrame and plate.UnitFrame.unit)
 end
 
--- Bottom centre of a nameplate as a fraction of the screen.
-local function platePos(plate)
-  local x = plate:GetCenter()
-  local bottom = plate:GetBottom()
-  if not x or not bottom then return nil end
-  local s = plate:GetEffectiveScale() / UIParent:GetEffectiveScale()
-  return x * s / UIParent:GetWidth(), bottom * s / UIParent:GetHeight()
-end
+local cloudsBlocked = false -- set when WoW refuses attaching a cloud; stays off this session
 
 -- Distance and direction from map positions. UnitPosition returns the
 -- north coordinate first and the west coordinate second; GetPlayerFacing is
@@ -125,7 +119,7 @@ end
 
 local function otherFart(c)
   local db = ns.db
-  local tier, pan, fx, fy = c.tier or 1, 0, nil, nil
+  local tier, pan = c.tier or 1, 0
   if c.unit then
     local dist, mapPan
     if c.source == "group" then dist, mapPan = mapInfo(c.unit) end
@@ -136,25 +130,15 @@ local function otherFart(c)
     else
       tier = roughTier(c.unit)
     end
-    if c.plate then
-      fx, fy = platePos(c.plate)
-      if fx then pan = math.max(-1, math.min(1, fx * 2 - 1)) end
-    end
   end
   local panIndex = math.floor((pan + 1) / 2 * (PANS - 1) + 0.5) + 1
   local base = BASES[math.random(#BASES)]
   ns.PlaySound(OTHERS_DIR .. base .. "_p" .. panIndex .. "_v" .. tier .. ".ogg")
 
-  -- small cloud, only when we know where they are on screen
-  if db.othersSmoke and fx and ns.PlaySmallSmoke then
-    local unit, plate, guid, drop = c.unit, c.plate, c.guid, CLOUD_DROP[tier]
-    ns.PlaySmallSmoke(fx, fy - drop, CLOUD_SCALE[tier], function()
-      if UnitGUID(unit) ~= guid then return nil end
-      local p = (C_NamePlate and C_NamePlate.GetNamePlateForUnit and C_NamePlate.GetNamePlateForUnit(unit)) or plate
-      if not p or not p:IsShown() then return nil end
-      local x, y = platePos(p)
-      if x then return x, y - drop end
-    end)
+  -- small cloud attached to their nameplate (never measured)
+  if db.othersSmoke and c.plate and not cloudsBlocked and ns.PlaySmallSmoke then
+    local ok, attached = pcall(ns.PlaySmallSmoke, c.plate, CLOUD_DROP[tier], CLOUD_SCALE[tier])
+    if not ok or not attached then cloudsBlocked = true end
   end
   if db.othersChat then
     local name = (c.unit and UnitName(c.unit)) or c.name or "Someone"
@@ -178,11 +162,12 @@ function ns.DebugOthers()
     #list, counts.nameplate or 0, counts.group or 0, counts.heard or 0,
     #list - (counts.nameplate or 0) - (counts.group or 0) - (counts.heard or 0)))
   local plates = C_NamePlate and C_NamePlate.GetNamePlates and #C_NamePlate.GetNamePlates() or -1
-  ns.msg(string.format("nameplate frames: %d, others on: %s", plates, tostring(ns.db.others)))
+  ns.msg(string.format("nameplate frames: %d, others on: %s, clouds on others: %s", plates, tostring(ns.db.others),
+    cloudsBlocked and "blocked by WoW this session" or "ok"))
   for i = 1, math.min(#list, 5) do
     local c = list[i]
     local name = (c.unit and UnitName(c.unit)) or c.name or "?"
-    local where = c.plate and platePos(c.plate) and "on screen" or "no screen position"
+    local where = c.plate and "has nameplate" or "no nameplate"
     ns.msg(string.format("- %s (%s, %s)", name, c.source, where))
   end
 end

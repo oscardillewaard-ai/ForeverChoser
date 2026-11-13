@@ -33,6 +33,13 @@ local function plateUnit(plate)
 end
 
 local cloudsBlocked = false -- set when WoW refuses attaching a cloud; stays off this session
+local lastCloudAt = -math.huge
+
+-- Called by the core when WoW blocks something of ours. If it happened right
+-- after attaching a cloud, the cloud is the likely cause: stop doing that.
+function ns.OnActionBlocked()
+  if GetTime() - lastCloudAt < 1 then cloudsBlocked = true end
+end
 
 -- Distance and direction from map positions. UnitPosition returns the
 -- north coordinate first and the west coordinate second; GetPlayerFacing is
@@ -54,14 +61,12 @@ local function mapInfo(unit)
   return dist, pan
 end
 
--- 3 = close, 2 = medium, 1 = far.
+-- 3 = close, 2 = medium, 1 = far. Outside your group WoW doesn't tell addons
+-- how far away someone is (CheckInteractDistance is blocked for addons in
+-- WoW Forever), so we guess: your pet is close, the rest close or medium.
 local function roughTier(unit)
-  if InCombatLockdown() then return 2 end
-  local ok, near = pcall(CheckInteractDistance, unit, 3) -- about 10 yards
-  if ok and near then return 3 end
-  ok, near = pcall(CheckInteractDistance, unit, 4)       -- about 28 yards
-  if ok and near then return 2 end
-  return 1
+  if unit == "pet" then return 3 end
+  return math.random() < 0.6 and 2 or 3
 end
 
 local function tierFromDistance(d)
@@ -137,6 +142,7 @@ local function otherFart(c)
 
   -- small cloud attached to their nameplate (never measured)
   if db.othersSmoke and c.plate and not cloudsBlocked and ns.PlaySmallSmoke then
+    lastCloudAt = GetTime()
     local ok, attached = pcall(ns.PlaySmallSmoke, c.plate, CLOUD_DROP[tier], CLOUD_SCALE[tier])
     if not ok or not attached then cloudsBlocked = true end
   end
@@ -164,6 +170,11 @@ function ns.DebugOthers()
   local plates = C_NamePlate and C_NamePlate.GetNamePlates and #C_NamePlate.GetNamePlates() or -1
   ns.msg(string.format("nameplate frames: %d, others on: %s, clouds on others: %s", plates, tostring(ns.db.others),
     cloudsBlocked and "blocked by WoW this session" or "ok"))
+  if ns.lastBlocked then
+    ns.msg(string.format("last blocked by WoW: %s (%d s ago)", ns.lastBlocked.what, math.floor(GetTime() - ns.lastBlocked.t)))
+  else
+    ns.msg("nothing of ours has been blocked by WoW this session")
+  end
   for i = 1, math.min(#list, 5) do
     local c = list[i]
     local name = (c.unit and UnitName(c.unit)) or c.name or "?"

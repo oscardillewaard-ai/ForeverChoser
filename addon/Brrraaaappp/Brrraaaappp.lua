@@ -227,6 +227,16 @@ local function migrate(saved)
   saved.version = DB_VERSION
 end
 
+-- When WoW blocks something of ours, remember what, for /brap debug.
+local blockWatch = CreateFrame("Frame")
+blockWatch:RegisterEvent("ADDON_ACTION_BLOCKED")
+blockWatch:RegisterEvent("ADDON_ACTION_FORBIDDEN")
+blockWatch:SetScript("OnEvent", function(_, event, addon, what)
+  if (event ~= "ADDON_ACTION_BLOCKED" and event ~= "ADDON_ACTION_FORBIDDEN") or addon ~= ADDON then return end
+  ns.lastBlocked = { what = tostring(what), t = GetTime() }
+  if ns.OnActionBlocked then ns.OnActionBlocked() end
+end)
+
 local loader = CreateFrame("Frame")
 loader:RegisterEvent("ADDON_LOADED")
 loader:SetScript("OnEvent", function(self, event, name)

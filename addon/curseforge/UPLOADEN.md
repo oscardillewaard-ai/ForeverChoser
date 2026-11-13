@@ -23,7 +23,7 @@
 
 ## 3. Bestand uploaden
 
-1. Upload `Brrraaaappp-2.4.1.zip` (die stuur ik je mee).
+1. Upload `Brrraaaappp-2.4.2.zip` (die stuur ik je mee).
 2. **Game version:** kies de WoW Forever-versie (1.60.1).
 3. **Release type:** *Beta* voor de eerste keer, *Release* als het goed werkt.
 4. **Changelog:** bijvoorbeeld "First release."

@@ -159,17 +159,52 @@ local function localEmote(line)
   DEFAULT_CHAT_FRAME:AddMessage(name .. " " .. line, r, g, b)
 end
 
--- One line per fart: as a real /e emote when that's on (and not on
--- cooldown), otherwise only in your own chat.
-local function fartText()
-  local line = pickLine()
-  local now = GetTime()
-  if db.emote and now - lastEmote >= EMOTE_COOLDOWN then
-    lastEmote = now
-    SendChatMessage(line, "EMOTE")
-  else
+-- WoW only lets addons send chat right after the player did something
+-- (a "hardware event"): a key press, a click, a slash command. An automatic
+-- fart comes from a timer, so its emote waits until your next move, jump or
+-- click and is sent along with that. Not moving for EMOTE_WAIT seconds?
+-- Then it's shown only in your own chat.
+local EMOTE_WAIT = 30
+local pendingEmote, pendingAt
+
+local function flushEmote()
+  if not pendingEmote then return end
+  local line = pendingEmote
+  pendingEmote = nil
+  if GetTime() - pendingAt > EMOTE_WAIT then
     localEmote(line)
+    return
   end
+  lastEmote = GetTime()
+  SendChatMessage(line, "EMOTE")
+end
+ns.FlushEmote = flushEmote
+
+-- Things the player does with keys or the mouse. Our hook runs right after,
+-- still inside that key press or click.
+local HARDWARE_HOOKS = {
+  "MoveForwardStart", "MoveBackwardStart", "StrafeLeftStart", "StrafeRightStart",
+  "TurnLeftStart", "TurnRightStart", "JumpOrAscendStart", "ToggleAutoRun",
+  "CameraOrSelectOrMoveStart", "TurnOrActionStart",
+}
+for _, name in ipairs(HARDWARE_HOOKS) do
+  if type(_G[name]) == "function" then
+    hooksecurefunc(name, function() if pendingEmote then flushEmote() end end)
+  end
+end
+
+-- One line per fart: as a real /e emote when that's on (and not on
+-- cooldown), otherwise only in your own chat. manual = started by you
+-- (slash command or button), so the emote can go out right away.
+local function fartText(manual)
+  local line = pickLine()
+  if not db.emote or GetTime() - lastEmote < EMOTE_COOLDOWN then
+    localEmote(line)
+    return
+  end
+  if pendingEmote then localEmote(pendingEmote) end -- an older one never got sent
+  pendingEmote, pendingAt = line, GetTime()
+  if manual then flushEmote() end
 end
 
 -- Farting -----------------------------------------------------------------
@@ -180,7 +215,7 @@ local function playFart(force)
   end
   playOwnSound()
   if db.smoke and ns.PlaySmoke then ns.PlaySmoke() end
-  if db.chatLine then fartText() end
+  if db.chatLine then fartText(force) end
   return true
 end
 

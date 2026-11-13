@@ -324,7 +324,12 @@ blockWatch:RegisterEvent("ADDON_ACTION_BLOCKED")
 blockWatch:RegisterEvent("ADDON_ACTION_FORBIDDEN")
 blockWatch:SetScript("OnEvent", function(_, event, addon, what)
   if (event ~= "ADDON_ACTION_BLOCKED" and event ~= "ADDON_ACTION_FORBIDDEN") or addon ~= ADDON then return end
-  ns.lastBlocked = { what = tostring(what), t = GetTime() }
+  ns.blocked = ns.blocked or {}
+  what = tostring(what)
+  for _, b in ipairs(ns.blocked) do
+    if b.what == what then b.count, b.t = b.count + 1, GetTime(); what = nil; break end
+  end
+  if what then table.insert(ns.blocked, { what = what, count = 1, t = GetTime() }) end
   if ns.OnActionBlocked then ns.OnActionBlocked() end
 end)
 

@@ -49,7 +49,7 @@ But something was missing. Something deeply, fundamentally *real*.
 No. Addons can't send sound to other players. Only the optional `/e` emote is visible to others. The smoke and the gross lines are just for you.
 
 **Do I need nameplates?**
-No. Brrraaaappp hears everyone who's busy around you: fighting, casting, chatting. Press `V` to turn nameplates on and it finds even more of them, and everyone with a nameplate gets their own little cloud. Your group members always sound from the right direction (outside instances).
+No. Brrraaaappp also finds your group, your target, your pet and anyone chatting near you. Press `V` to turn nameplates on and it finds even more of them, and everyone with a nameplate gets their own little cloud. Your group members always sound from the right direction (outside instances).
 
 **It's been five minutes and nothing happened!**
 Patience. A good fart can't be rushed. By default it comes every 10 to 30 minutes. Check `/brap status`, or set a shorter wait in `/brap`.

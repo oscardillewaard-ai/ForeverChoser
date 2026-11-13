@@ -7,7 +7,7 @@
 -- 2. Group members: direction and distance from their map position and the
 --    way you're facing (outside instances, where the game allows it).
 -- 3. Target, mouseover, target's target and your pet: rough distance, middle.
--- 4. Characters that just did something nearby (combat log, /say, /e):
+-- 4. Characters that just chatted nearby (/say, /e):
 --    we only know they're around, so a faint fart from the middle.
 -- Addons can't set volume or panning, so the sounds are pre-rendered in
 -- 5 directions x 3 volumes in sounds\others\.
@@ -22,8 +22,6 @@ local EXTRA_UNITS = { "target", "mouseover", "targettarget", "pet" }
 local RECENT_SECONDS = 60                -- how long someone from the log/chat counts as "nearby"
 local RECENT_MAX = 40
 
-local TYPE_PLAYER = COMBATLOG_OBJECT_TYPE_PLAYER or 0x400
-local TYPE_NPC = COMBATLOG_OBJECT_TYPE_NPC or 0x800
 
 local gen = 0
 local recent = {} -- guid -> { name = ..., t = GetTime(), tier = 1 or 2 }
@@ -178,8 +176,10 @@ function ns.DebugOthers()
   local plates = C_NamePlate and C_NamePlate.GetNamePlates and #C_NamePlate.GetNamePlates() or -1
   ns.msg(string.format("nameplate frames: %d, others on: %s, clouds on others: %s", plates, tostring(ns.db.others),
     cloudsBlocked and "blocked by WoW this session" or "ok"))
-  if ns.lastBlocked then
-    ns.msg(string.format("last blocked by WoW: %s (%d s ago)", ns.lastBlocked.what, math.floor(GetTime() - ns.lastBlocked.t)))
+  if ns.blocked and #ns.blocked > 0 then
+    for _, b in ipairs(ns.blocked) do
+      ns.msg(string.format("blocked by WoW: %s (%dx, last %d s ago)", b.what, b.count, math.floor(GetTime() - b.t)))
+    end
   else
     ns.msg("nothing of ours has been blocked by WoW this session")
   end
@@ -224,7 +224,7 @@ function ns.ScheduleOthers(delay)
   end)
 end
 
--- Remember who's around from the combat log and nearby chat.
+-- Remember who's around from nearby chat.
 local function remember(guid, name, tier)
   if not guid or not name or guid == UnitGUID("player") then return end
   local r = recent[guid]
@@ -249,30 +249,18 @@ local function remember(guid, name, tier)
   end
 end
 
+-- Remember who's chatting nearby. (The combat log can't be used: WoW
+-- Forever blocks addons from registering COMBAT_LOG_EVENT_UNFILTERED.)
 local watcher = CreateFrame("Frame")
-watcher:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 watcher:RegisterEvent("CHAT_MSG_SAY")
 watcher:RegisterEvent("CHAT_MSG_EMOTE")
 watcher:RegisterEvent("CHAT_MSG_TEXT_EMOTE")
 watcher:SetScript("OnEvent", function(_, event, ...)
   if not ns.db or not ns.db.others then return end
-  if event == "COMBAT_LOG_EVENT_UNFILTERED" then
-    local _, sub, _, srcGUID, srcName, srcFlags, _, dstGUID = CombatLogGetCurrentEventInfo()
-    if sub == "UNIT_DIED" then
-      if dstGUID then recent[dstGUID] = nil end
-      return
-    end
-    if srcFlags and (bit.band(srcFlags, TYPE_PLAYER) ~= 0 or bit.band(srcFlags, TYPE_NPC) ~= 0) then
-      local r = recent[srcGUID]
-      if r and GetTime() - r.t < 5 then return end -- cheap: don't update on every hit
-      remember(srcGUID, srcName, 1)
-    end
-  else
-    -- /say and emotes only reach about 25-60 yards: medium volume
-    local _, sender = ...
-    local guid = select(12, ...)
-    if sender and guid then remember(guid, Ambiguate and Ambiguate(sender, "short") or sender, 2) end
-  end
+  -- /say and emotes only reach about 25-60 yards: medium volume
+  local _, sender = ...
+  local guid = select(12, ...)
+  if sender and guid then remember(guid, Ambiguate and Ambiguate(sender, "short") or sender, 2) end
 end)
 
 -- Meeting someone: each new character you see or hear has a chance to fart

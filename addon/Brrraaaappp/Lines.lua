@@ -154,3 +154,11 @@ ns.OTHER_LINES = {
   "%s farts. Somewhere, a druid weeps.",
   "The air around %s turns brown.",
 }
+
+-- Private chat lines when someone nearby farts but isn't on your screen. %s = their name.
+ns.DISTANT_LINES = {
+  "Somewhere nearby, %s lets one rip. The wind carries it to you.",
+  "You hear %s fart in the distance. Then you smell it.",
+  "A faint 'pfrrt' from %s's direction. Nature is healing.",
+  "%s farts somewhere out of sight. The birds stop singing.",
+}

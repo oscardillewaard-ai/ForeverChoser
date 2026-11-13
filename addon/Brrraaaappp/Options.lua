@@ -161,15 +161,15 @@ local function createPanel()
 
   -- Other characters
   header(f, "Other characters", -252)
-  check(f, "Others fart too", "Nearby characters (with a visible nameplate), your group and your target fart sometimes. Sound comes from their direction, quieter when they're further away. Only you hear and see this.", "others", 20, -272, rescheduleOthers)
-  check(f, "Small smoke cloud", "A small cloud at their nameplate.", "othersSmoke", 240, -272)
+  check(f, "Others fart too", "Nearby characters fart sometimes: your group, your target, your pet and anyone who just did something near you. Sound comes from their direction when the game tells us where they are, quieter further away. With nameplates on (V) you also get the direction and a small cloud for everyone on screen. Only you hear and see this.", "others", 20, -272, rescheduleOthers)
+  check(f, "Small smoke cloud", "A small cloud at their nameplate (only for characters with a visible nameplate).", "othersSmoke", 240, -272)
   check(f, "Chat line", "Tells you who it was. Only you see it.", "othersChat", 20, -298)
   local oth = {}
   local fixOthers = pairFix("othersMin", "othersMax", oth, rescheduleOthers)
   oth.min = slider(f, "Shortest wait", "othersMin", 1, 60, 26, -346, fixOthers)
   oth.max = slider(f, "Longest wait", "othersMax", 1, 120, 246, -346, fixOthers)
   button(f, "Blame someone now", 150, 20, -374, function()
-    if not ns.BlameSomeone() then ns.msg("Nobody nearby to blame. Turn on nameplates (V) or find a friend.") end
+    if not ns.BlameSomeone() then ns.msg("Nobody nearby to blame. Find some company, or turn on nameplates (V).") end
   end)
 
   -- Sounds

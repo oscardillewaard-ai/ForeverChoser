@@ -16,7 +16,7 @@ A World of Warcraft: Forever addon that makes your character fart every now and 
 - **Brown smoke cloud** over your screen for a few seconds. It sits below the UI, so your bars and chat stay readable.
 - **Gross chat line** based on your race and class. Only you see it.
 - **`/e` emote** such as "*Yourname lets one rip and blames the nearest gnome.*" Other players see this, so it can be switched off. Limited to one every 20 seconds.
-- **Other characters fart too**: characters with a visible nameplate, your group members and your target. The sound comes from their direction (left/right) and gets quieter with distance, and a small cloud follows their nameplate. Only you hear and see this.
+- **Other characters fart too**: your group, your target, your pet and anyone who just did something near you (fighting, casting, `/say`, emotes). Group members sound from their direction and get quieter with distance. With nameplates on, everyone on screen gets a direction and a small cloud that follows their nameplate. Only you hear and see this.
 - **Your own fart sounds**: see below.
 - Settings window with everything on/off, also reachable from the game's AddOns options.
 
@@ -42,8 +42,8 @@ A game sound ID (a number) also works. If a file can't be played, a built-in far
 ## Good to know
 
 - Sounds play only on your computer. Addons can't send sound to other players; the `/e` emote is what others see.
-- Directional sound uses pre-rendered left/right and volume variants, because addons can't pan or set the volume of a sound. Characters without a visible nameplate (for example a group member behind you) sound from the middle.
-- Turn on nameplates (`V`) to get more characters around you farting.
+- Directional sound uses pre-rendered left/right and volume variants, because addons can't pan or set the volume of a sound.
+- Nameplates are optional. Without them, Brrraaaappp still finds characters around you, but it can only tell where they are for group members (outside instances); others sound faint and from the middle, and get no cloud. Turn nameplates on (`V`) for direction and clouds on everyone you can see.
 - Sound plays on the Master channel. With WoW in the background you only hear it if **Sound in Background** is on.
 - The first automatic fart comes 10-30 minutes after login. Every `/reload` starts the wait again.
 

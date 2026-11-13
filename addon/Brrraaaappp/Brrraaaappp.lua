@@ -25,6 +25,7 @@ local DEFAULTS = {
   others = true,       -- other characters fart too
   othersMin = 5,
   othersMax = 15,
+  othersMeet = 10,     -- % chance that someone you meet farts soon after
   othersSmoke = true,
   othersChat = true,
   builtin = true,      -- use the built-in fart sounds
@@ -82,19 +83,71 @@ end
 
 -- Lines -------------------------------------------------------------------
 
+-- Picks a line from the list that wasn't used in the last RECENT_LINES picks.
+local RECENT_LINES = 15
+local recentSet, recentQueue = {}, {}
+function ns.PickFresh(list)
+  local fresh = {}
+  for _, line in ipairs(list) do
+    if not recentSet[line] then fresh[#fresh + 1] = line end
+  end
+  if #fresh == 0 then fresh = list end
+  local pick = fresh[math.random(#fresh)]
+  if not recentSet[pick] then
+    recentSet[pick] = true
+    recentQueue[#recentQueue + 1] = pick
+    if #recentQueue > RECENT_LINES then recentSet[table.remove(recentQueue, 1)] = nil end
+  end
+  return pick
+end
+
+-- What the player is doing right now, for situation lines.
+local function situation()
+  if UnitIsGhost and UnitIsGhost("player") then return "ghost" end
+  if UnitOnTaxi and UnitOnTaxi("player") then return "taxi" end
+  if IsSwimming and IsSwimming() then return "swimming" end
+  if InCombatLockdown() then return "combat" end
+  if IsMounted and IsMounted() then return "mounted" end
+  if IsInInstance and IsInInstance() then return "instance" end
+  if IsResting and IsResting() then return "resting" end
+  if IsIndoors and IsIndoors() then return "indoors" end
+end
+
+-- Chooses a kind of line (situation, zone, race, class, generic) by weight,
+-- then a fresh line of that kind.
 local function pickLine()
   local pools = {}
+  local function add(list, weight)
+    if list and #list > 0 then pools[#pools + 1] = { list = list, weight = weight } end
+  end
   local _, raceFile = UnitRace("player")
   local _, classFile = UnitClass("player")
   local raceLines = raceFile and ns.RACE_LINES[raceFile]
   if not raceLines and raceFile and strfind(strlower(raceFile), "sky") then
     raceLines = ns.SKYBORNE_LINES
   end
-  if raceLines then pools[#pools + 1] = raceLines end
-  if classFile and ns.CLASS_LINES[classFile] then pools[#pools + 1] = ns.CLASS_LINES[classFile] end
-  if #pools == 0 or math.random() < 0.15 then pools[#pools + 1] = ns.GENERIC_LINES end
-  local pool = pools[math.random(#pools)]
-  return pool[math.random(#pool)]
+  local sit = situation()
+  add(sit and ns.SITUATION_LINES and ns.SITUATION_LINES[sit], 3)
+  add(ns.ZONE_LINES and GetRealZoneText and ns.ZONE_LINES[GetRealZoneText() or ""], 3)
+  add(raceLines, 2)
+  add(classFile and ns.CLASS_LINES[classFile], 2)
+  add(ns.GENERIC_LINES, 1)
+  -- skip kinds whose lines were all used recently, so nothing repeats
+  local usable = {}
+  for _, p in ipairs(pools) do
+    for _, line in ipairs(p.list) do
+      if not recentSet[line] then usable[#usable + 1] = p; break end
+    end
+  end
+  if #usable == 0 then usable = pools end
+  local total = 0
+  for _, p in ipairs(usable) do total = total + p.weight end
+  local roll = math.random() * total
+  for _, p in ipairs(usable) do
+    roll = roll - p.weight
+    if roll <= 0 then return ns.PickFresh(p.list) end
+  end
+  return ns.PickFresh(usable[#usable].list)
 end
 
 -- Shows the line like an emote, but only in your own chat.

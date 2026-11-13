@@ -44,7 +44,8 @@ local function check(parent, label, tip, key, x, y, onChange)
   return cb
 end
 
-local function slider(parent, label, key, minV, maxV, x, y, onChange)
+local function slider(parent, label, key, minV, maxV, x, y, onChange, suffix)
+  suffix = suffix or " min"
   local s = CreateFrame("Slider", nil, parent, BACKDROP_TEMPLATE)
   s:SetOrientation("HORIZONTAL")
   s:SetSize(150, 15)
@@ -68,7 +69,7 @@ local function slider(parent, label, key, minV, maxV, x, y, onChange)
   value:SetPoint("LEFT", s, "RIGHT", 8, 0)
   s:SetScript("OnValueChanged", function(self, v)
     v = math.floor(v + 0.5)
-    value:SetText(v .. " min")
+    value:SetText(v .. suffix)
     if self.updating or ns.db[key] == v then return end
     ns.db[key] = v
     if onChange then onChange(key, v) end
@@ -76,7 +77,7 @@ local function slider(parent, label, key, minV, maxV, x, y, onChange)
   local function refresh()
     s.updating = true
     s:SetValue(ns.db[key])
-    value:SetText(ns.db[key] .. " min")
+    value:SetText(ns.db[key] .. suffix)
     s.updating = false
   end
   refreshers[#refreshers + 1] = refresh
@@ -111,7 +112,7 @@ end
 
 local function createPanel()
   local f = CreateFrame("Frame", "BrrraaaapppOptions", UIParent, BACKDROP_TEMPLATE)
-  f:SetSize(470, 660)
+  f:SetSize(470, 710)
   f:SetPoint("CENTER")
   f:SetFrameStrata("DIALOG")
   f:SetClampedToScreen(true)
@@ -168,7 +169,8 @@ local function createPanel()
   local fixOthers = pairFix("othersMin", "othersMax", oth, rescheduleOthers)
   oth.min = slider(f, "Shortest wait", "othersMin", 1, 60, 26, -346, fixOthers)
   oth.max = slider(f, "Longest wait", "othersMax", 1, 120, 246, -346, fixOthers)
-  button(f, "Blame someone now", 150, 20, -374, function()
+  slider(f, "Chance when you meet someone", "othersMeet", 0, 50, 26, -398, nil, "%")
+  button(f, "Blame someone now", 150, 260, -392, function()
     local ok, found = pcall(ns.BlameSomeone)
     if not ok then
       ns.msg("|cffff4040Error:|r " .. tostring(found) .. " (please report this)")
@@ -178,22 +180,22 @@ local function createPanel()
   end)
 
   -- Sounds
-  header(f, "Sounds", -412)
-  check(f, "Built-in farts", "The 11 fart recordings that come with the addon.", "builtin", 20, -432)
+  header(f, "Sounds", -436)
+  check(f, "Built-in farts", "The 11 fart recordings that come with the addon.", "builtin", 20, -456)
   local help = f:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-  help:SetPoint("TOPLEFT", 24, -464)
+  help:SetPoint("TOPLEFT", 24, -488)
   help:SetWidth(420)
   help:SetJustifyH("LEFT")
   help:SetText("Add your own: put .ogg or .mp3 files in Interface\\AddOns\\BrrraaaapppCustom\\, restart WoW, then type the file name below. A game sound ID (number) also works.")
 
   local input = CreateFrame("EditBox", "BrrraaaapppCustomInput", f, "InputBoxTemplate")
   input:SetSize(270, 20)
-  input:SetPoint("TOPLEFT", 30, -500)
+  input:SetPoint("TOPLEFT", 30, -524)
   input:SetAutoFocus(false)
   input:SetMaxLetters(200)
 
   local list = CreateFrame("Frame", nil, f)
-  list:SetPoint("TOPLEFT", 20, -530)
+  list:SetPoint("TOPLEFT", 20, -554)
   list:SetSize(430, ROWS * 22)
   list:EnableMouseWheel(true)
   list.offset = 0
@@ -274,7 +276,7 @@ local function createPanel()
   end
   input:SetScript("OnEnterPressed", addEntry)
   input:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
-  button(f, "Add", 70, 312, -499, addEntry)
+  button(f, "Add", 70, 312, -523, addEntry)
   refreshers[#refreshers + 1] = refreshList
 
   local footer = f:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")

@@ -150,9 +150,9 @@ local function otherFart(c)
     local name = (c.unit and UnitName(c.unit)) or c.name or "Someone"
     local line
     if c.unit then
-      line = string.format(ns.OTHER_LINES[math.random(#ns.OTHER_LINES)], name)
+      line = string.format(ns.PickFresh(ns.OTHER_LINES), name)
     else
-      line = string.format(ns.DISTANT_LINES[math.random(#ns.DISTANT_LINES)], name)
+      line = string.format(ns.PickFresh(ns.DISTANT_LINES), name)
     end
     ns.msg("|cffd2b48c" .. line .. "|r")
   end
@@ -229,6 +229,12 @@ local function remember(guid, name, tier)
   end
   if count >= RECENT_MAX and oldestGuid then recent[oldestGuid] = nil end
   recent[guid] = { name = name, t = now, tier = tier }
+  if ns.Meet then
+    ns.Meet(guid, function()
+      local r = recent[guid]
+      if r then return { guid = guid, name = r.name, tier = r.tier, source = "heard" } end
+    end)
+  end
 end
 
 local watcher = CreateFrame("Frame")
@@ -255,4 +261,43 @@ watcher:SetScript("OnEvent", function(_, event, ...)
     local guid = select(12, ...)
     if sender and guid then remember(guid, Ambiguate and Ambiguate(sender, "short") or sender, 2) end
   end
+end)
+
+-- Meeting someone: each new character you see or hear has a chance to fart
+-- a few seconds later. Same person: once per 10 minutes. Between two such
+-- farts: at least 45 seconds, so a busy city doesn't turn into an orchestra.
+local MEET_DELAY_MIN, MEET_DELAY_MAX = 2, 8
+local MEET_COOLDOWN = 45
+local MEET_AGAIN_AFTER = 600
+local met = {}             -- guid -> GetTime() of the last roll
+local lastMeetFart = -math.huge
+
+local function meet(guid, makeCandidate)
+  local db = ns.db
+  if not db or not db.others or (db.othersMeet or 0) <= 0 or not guid then return end
+  if guid == UnitGUID("player") then return end
+  local now = GetTime()
+  if met[guid] and now - met[guid] < MEET_AGAIN_AFTER then return end
+  met[guid] = now
+  if math.random(100) > db.othersMeet or now - lastMeetFart < MEET_COOLDOWN then return end
+  lastMeetFart = now
+  C_Timer.After(MEET_DELAY_MIN + math.random() * (MEET_DELAY_MAX - MEET_DELAY_MIN), function()
+    if not ns.db.others or (InCombatLockdown() and not ns.db.inCombat) then return end
+    local c = makeCandidate()
+    if c then otherFart(c) end
+  end)
+end
+ns.Meet = meet
+
+local meetWatch = CreateFrame("Frame")
+meetWatch:RegisterEvent("NAME_PLATE_UNIT_ADDED")
+meetWatch:SetScript("OnEvent", function(_, event, unit)
+  if event ~= "NAME_PLATE_UNIT_ADDED" or not unit then return end
+  if UnitIsUnit(unit, "player") or UnitIsDeadOrGhost(unit) then return end
+  local guid = UnitGUID(unit)
+  meet(guid, function()
+    if UnitGUID(unit) ~= guid or UnitIsDeadOrGhost(unit) then return nil end -- gone, or the plate is someone else now
+    local plate = C_NamePlate and C_NamePlate.GetNamePlateForUnit and C_NamePlate.GetNamePlateForUnit(unit)
+    return { unit = unit, plate = plate, guid = guid, source = "nameplate" }
+  end)
 end)

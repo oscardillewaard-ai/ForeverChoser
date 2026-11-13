@@ -14,9 +14,10 @@ A World of Warcraft: Forever addon that makes your character fart every now and 
 
 - **Your farts**: at a random moment, every 10-30 minutes by default (adjustable).
 - **Brown smoke cloud** over your screen for a few seconds. It sits below the UI, so your bars and chat stay readable.
-- **Gross fart text** based on your race and class, as an emote: "*Owa Tanka farts, and their tail swishes the stench around so nobody misses out.*"
+- **Gross fart text**, as an emote: "*Owa Tanka farts, and their tail swishes the stench around so nobody misses out.*" Almost 300 lines: for every race and class, for zones, cities and dungeons, and for what you're doing (mounted, flying, swimming, in combat, at the inn, as a ghost). Zone lines need an English client. A line doesn't come back within 15 farts.
 - **Sent as a real `/e` emote**, so other players see it. Switch that off and only you see the text. At most one emote every 20 seconds.
 - **Other characters fart too**: your group, your target, your pet and anyone who just did something near you (fighting, casting, `/say`, emotes). Sound gets quieter with distance, and group members sound from their direction (left/right). With nameplates on, characters on screen also get a small cloud attached to their nameplate. Only you hear and see this.
+- **Meeting someone**: every new character you see or hear has a chance (10% by default, adjustable) to fart a few seconds later.
 - **Your own fart sounds**: see below.
 - Settings window with everything on/off, also reachable from the game's AddOns options.
 

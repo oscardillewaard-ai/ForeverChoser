@@ -22,11 +22,13 @@ But something was missing. Something deeply, fundamentally *real*.
 
 🟤 **Brown smoke.** A thick brown cloud rolls over your screen and slowly drifts away, while the edges of your screen go a little... murky. Don't worry: it stays below your UI, so you can still see your action bars while you're suffering.
 
-🤢 **Gross flavor text written for your race and class.** Your Dwarf's beard catches fire from the fumes. Your Undead loses a piece of intestine and puts it back. Your Rogue's Stealth breaks because everyone can smell you. Your Mage blinks away, but the cloud stays behind. Every race and class has its own lines, including Skyborne.
+🤢 **Almost 300 gross lines, and they know where you are.** Your Dwarf's beard catches fire from the fumes. Your Undead loses a piece of intestine and puts it back. Fart in Molten Core and Ragnaros yells *TOO SOON!* Fart on your mount and it turns around to give you a look. Fart in the Barrens and General chat starts arguing about it. Lines for every race and class (including Skyborne), dozens of zones, cities and dungeons, and whatever you're doing right now.
 
 🎭 **Share it with the world (optional).** The gross line goes out as a real `/e` emote, so everyone nearby reads *"Owa Tanka farts, and their tail swishes the stench around so nobody misses out."* You can switch this off with one click if you value your guild membership; then only you see it.
 
 🗺️ **Nobody is innocent.** Other characters fart too: players and NPCs around you, your group, your target, even your own pet. Close by it's loud, far away it's a faint toot, and your group members fart from the right direction: the warrior on your left farts in your left ear. With nameplates on, a small brown cloud rises above whoever did it. True 3D stink. Only you hear and see this, so you can quietly judge everyone.
+
+👋 **Nice to meet you.** Every character you run into has a small chance to greet you the only way they know how, a few seconds after you meet. You set how likely that is.
 
 🎙️ **Bring your own farts.** Put your own `.ogg` or `.mp3` files in a folder, add them in the settings, and your character farts with *your* sound. We don't ask where you got it.
 

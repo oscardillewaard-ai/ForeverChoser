@@ -2,11 +2,12 @@
 ## Title: Brrraaaappp
 ## Notes: Your character farts every now and then. Brown smoke, gross race/class lines, /e emotes, and nearby characters join in. Type /brap for settings.
 ## Author: oscardillewaard-ai
-## Version: 2.3.1
+## Version: 2.4.0
 ## IconTexture: Interface\AddOns\Brrraaaappp\media\icon
 ## SavedVariables: BrrraaaapppDB
 
 Lines.lua
+LinesMore.lua
 Smoke.lua
 Brrraaaappp.lua
 Others.lua

@@ -1,29 +1,87 @@
--- Brrraaaappp: wanneer de natuur roept, roept ze luid.
--- Speelt heel af en toe een scheetgeluidje af. Het geluid is alleen voor jou
--- hoorbaar (addons kunnen geen geluid naar andere spelers sturen). Wil je dat
--- anderen het ook merken, zet dan de /fart-emote aan.
-
+-- Brrraaaappp: when nature calls, it calls loudly.
+-- Core: settings, your own farts, the timer and slash commands.
+-- Sounds play only on your own computer; addons can't send sound to other
+-- players. The optional /e emote is what other players see.
 local ADDON, ns = ...
-local SOUND_PATH = "Interface\\AddOns\\" .. ADDON .. "\\sounds\\"
--- Echte opnames van freesound.org; zie de README voor makers en links.
-local SOUNDS = {
+
+local SOUND_DIR = "Interface\\AddOns\\" .. ADDON .. "\\sounds\\"
+ns.CUSTOM_DIR = "Interface\\AddOns\\BrrraaaapppCustom\\"
+
+-- Real recordings from freesound.org; see the README for authors and links.
+ns.SOUNDS = {
   "timtube_fart3", "dual_fart", "bad_chili_fart", "zippi1_fart5",
   "smokevhstapes_fart5", "aetherzip_fart_long", "teddyferguson_fart",
   "breviceps_fart3", "nasty_fart", "frenkfurth_fart50", "bassimat_fart005",
 }
 
 local DEFAULTS = {
-  enabled   = true,
-  minMinutes = 10,   -- kortste wachttijd tussen scheten
-  maxMinutes = 30,   -- langste wachttijd tussen scheten
-  emote     = false, -- ook de echte /fart-emote doen (zichtbaar voor anderen)
-  inCombat  = true,  -- ook tijdens gevechten
-  zin       = true,  -- smerige zin in je chat (alleen jij ziet die)
-  rook      = true,  -- bruine rookwolk over je scherm (alleen jij ziet die)
-  channel   = "Master",
+  enabled = true,      -- automatic farts
+  minMinutes = 10,
+  maxMinutes = 30,
+  inCombat = true,
+  chatLine = true,     -- gross line in your chat (only you see it)
+  smoke = true,        -- brown smoke cloud (only you see it)
+  emote = true,        -- /e emote (other players see it!)
+  others = true,       -- other characters fart too
+  othersMin = 5,
+  othersMax = 15,
+  othersSmoke = true,
+  othersChat = true,
+  builtin = true,      -- use the built-in fart sounds
+  custom = {},         -- your own sounds: file names or sound IDs
+  channel = "Master",
 }
+local DB_VERSION = 2
+local EMOTE_COOLDOWN = 20 -- seconds, so /brap now can't spam the chat
 
--- Kiest een smerige zin die past bij je race of class (zie Lines.lua).
+local db
+local timerGen = 0 -- increases on every reschedule so old timers do nothing
+local nextFartAt   -- GetTime() of the next automatic fart
+local lastEmote = -math.huge
+
+function ns.msg(text)
+  DEFAULT_CHAT_FRAME:AddMessage("|cff9acd32Brrraaaappp|r: " .. text)
+end
+local msg = ns.msg
+
+-- Sounds ------------------------------------------------------------------
+
+-- A custom entry is a sound ID (number), a full path, or a file name in
+-- Interface\AddOns\BrrraaaapppCustom\ (".ogg" is added if there's no extension).
+function ns.ResolveCustom(entry)
+  local id = tonumber(entry)
+  if id then return id end
+  entry = entry:gsub("/", "\\")
+  if not entry:find("%.%w+$") then entry = entry .. ".ogg" end
+  if entry:find("\\") then return entry end
+  return ns.CUSTOM_DIR .. entry
+end
+
+local function play(sound)
+  local ok, willPlay = pcall(PlaySoundFile, sound, db.channel)
+  return ok and willPlay and true or false
+end
+ns.PlaySound = play
+
+function ns.TestCustom(entry)
+  return play(ns.ResolveCustom(entry))
+end
+
+local function playOwnSound()
+  local pool = {}
+  if db.builtin then
+    for _, name in ipairs(ns.SOUNDS) do pool[#pool + 1] = { builtin = name } end
+  end
+  for _, entry in ipairs(db.custom) do pool[#pool + 1] = { custom = entry } end
+  if #pool == 0 then pool[1] = { builtin = ns.SOUNDS[math.random(#ns.SOUNDS)] } end
+  local pick = pool[math.random(#pool)]
+  if pick.custom and play(ns.ResolveCustom(pick.custom)) then return end
+  -- built-in pick, or a custom file that couldn't play: use a built-in one
+  play(SOUND_DIR .. (pick.builtin or ns.SOUNDS[math.random(#ns.SOUNDS)]) .. ".ogg")
+end
+
+-- Lines -------------------------------------------------------------------
+
 local function pickLine()
   local pools = {}
   local _, raceFile = UnitRace("player")
@@ -32,14 +90,14 @@ local function pickLine()
   if not raceLines and raceFile and strfind(strlower(raceFile), "sky") then
     raceLines = ns.SKYBORNE_LINES
   end
-  if raceLines then table.insert(pools, raceLines) end
-  if classFile and ns.CLASS_LINES[classFile] then table.insert(pools, ns.CLASS_LINES[classFile]) end
-  if #pools == 0 then table.insert(pools, ns.GENERIC_LINES) end
+  if raceLines then pools[#pools + 1] = raceLines end
+  if classFile and ns.CLASS_LINES[classFile] then pools[#pools + 1] = ns.CLASS_LINES[classFile] end
+  if #pools == 0 then pools[1] = ns.GENERIC_LINES end
   local pool = pools[math.random(#pools)]
   return pool[math.random(#pool)], classFile
 end
 
-local function classColor(classFile)
+function ns.ClassColor(classFile)
   local c = classFile and RAID_CLASS_COLORS and RAID_CLASS_COLORS[classFile]
   if c then
     return string.format("|cff%02x%02x%02x", math.floor(c.r * 255), math.floor(c.g * 255), math.floor(c.b * 255))
@@ -47,31 +105,31 @@ local function classColor(classFile)
   return "|cffffd100"
 end
 
-local db
-local timerGen = 0 -- verhoogt bij elke herplanning, zodat oude timers niets meer doen
-local nextFartAt   -- GetTime() waarop de volgende automatische scheet komt
-
-local function msg(text)
-  DEFAULT_CHAT_FRAME:AddMessage("|cff9acd32Brrraaaappp|r: " .. text)
+local function sendEmote()
+  local now = GetTime()
+  if now - lastEmote < EMOTE_COOLDOWN then return end
+  lastEmote = now
+  SendChatMessage(ns.EMOTE_LINES[math.random(#ns.EMOTE_LINES)], "EMOTE")
 end
+
+-- Farting -----------------------------------------------------------------
 
 local function playFart(force)
   if not force and not db.inCombat and InCombatLockdown() then
     return false
   end
-  local file = SOUNDS[math.random(#SOUNDS)]
-  PlaySoundFile(SOUND_PATH .. file .. ".ogg", db.channel)
-  if db.rook and ns.PlaySmoke then
-    ns.PlaySmoke()
-  end
-  if db.emote then
-    DoEmote("FART")
-  end
-  if db.zin then
+  playOwnSound()
+  if db.smoke and ns.PlaySmoke then ns.PlaySmoke() end
+  if db.emote then sendEmote() end
+  if db.chatLine then
     local line, classFile = pickLine()
-    msg(classColor(classFile) .. line .. "|r")
+    msg(ns.ClassColor(classFile) .. line .. "|r")
   end
   return true
+end
+
+function ns.FartNow()
+  playFart(true)
 end
 
 local schedule
@@ -86,7 +144,7 @@ schedule = function()
   C_Timer.After(delay, function()
     if myGen ~= timerGen or not db.enabled then return end
     if not playFart(false) then
-      -- in combat en dat mag niet: probeer het over 20 seconden opnieuw
+      -- in combat and that's not allowed: try again in 20 seconds
       nextFartAt = GetTime() + 20
       C_Timer.After(20, function()
         if myGen == timerGen then playFart(false) end
@@ -97,65 +155,47 @@ schedule = function()
     schedule()
   end)
 end
+ns.Reschedule = function() schedule() end
 
-local function nextText()
-  if not db.enabled or not nextFartAt then return "" end
+function ns.NextText()
+  if not db.enabled then return "Automatic farts are off" end
+  if not nextFartAt then return "" end
   local left = math.max(0, nextFartAt - GetTime())
   if left < 60 then
-    return string.format(" | volgende over %d s", math.floor(left))
+    return string.format("Next fart in %d s", math.floor(left))
   end
-  return string.format(" | volgende over %d min", math.ceil(left / 60))
+  return string.format("Next fart in %d min", math.ceil(left / 60))
 end
 
+-- Slash commands ----------------------------------------------------------
+
 local function status()
-  msg(string.format("%s | elke %d-%d min%s | emote: %s | zin: %s | rook: %s | in combat: %s",
-    db.enabled and "|cff00ff00aan|r" or "|cffff0000uit|r",
-    db.minMinutes, db.maxMinutes,
-    nextText(),
-    db.emote and "aan" or "uit",
-    db.zin and "aan" or "uit",
-    db.rook and "aan" or "uit",
-    db.inCombat and "ja" or "nee"))
+  msg(string.format("%s | every %d-%d min | %s | others: %s",
+    db.enabled and "|cff00ff00on|r" or "|cffff0000off|r",
+    db.minMinutes, db.maxMinutes, ns.NextText(),
+    db.others and "on" or "off"))
 end
 
 local function help()
-  msg("commando's:")
-  msg("/brrraaaappp aan | uit - addon aan- of uitzetten")
-  msg("/brrraaaappp nu - meteen een scheetje (testen)")
-  msg("/brrraaaappp tijd <min> <max> - wachttijd in minuten, bv. /brrraaaappp tijd 5 20")
-  msg("/brrraaaappp emote - /fart-emote aan/uit (anderen zien die!)")
-  msg("/brrraaaappp zin - smerige race/class-zin aan/uit")
-  msg("/brrraaaappp rook - bruine rookwolk over je scherm aan/uit")
-  msg("/brrraaaappp combat - wel/niet tijdens gevechten")
-  msg("/brrraaaappp status - huidige instellingen")
+  msg("commands:")
+  msg("/brap - open the settings window")
+  msg("/brap now - fart right now")
+  msg("/brap on | off - automatic farts on or off")
+  msg("/brap status - show when the next fart comes")
 end
 
-SLASH_BRRRAAAAPPP1 = "/brrraaaappp"
-SLASH_BRRRAAAAPPP2 = "/brap"
+SLASH_BRRRAAAAPPP1 = "/brap"
+SLASH_BRRRAAAAPPP2 = "/brrraaaappp"
 SlashCmdList.BRRRAAAAPPP = function(input)
-  local cmd, a, b = strsplit(" ", strlower(strtrim(input or "")))
-  if cmd == "aan" or cmd == "on" then
-    db.enabled = true; schedule(); status()
-  elseif cmd == "uit" or cmd == "off" then
-    db.enabled = false; schedule(); status()
-  elseif cmd == "nu" or cmd == "now" then
+  local cmd = strsplit(" ", strlower(strtrim(input or "")))
+  if cmd == nil or cmd == "" or cmd == "options" or cmd == "config" then
+    ns.ToggleOptions()
+  elseif cmd == "now" then
     playFart(true)
-  elseif cmd == "tijd" or cmd == "time" then
-    local lo, hi = tonumber(a), tonumber(b)
-    if lo and hi and lo >= 1 and hi >= lo then
-      db.minMinutes, db.maxMinutes = math.floor(lo), math.floor(hi)
-      schedule(); status()
-    else
-      msg("gebruik: /brrraaaappp tijd <min> <max>, met min >= 1 en max >= min")
-    end
-  elseif cmd == "emote" then
-    db.emote = not db.emote; status()
-  elseif cmd == "zin" then
-    db.zin = not db.zin; status()
-  elseif cmd == "rook" or cmd == "smoke" then
-    db.rook = not db.rook; status()
-  elseif cmd == "combat" then
-    db.inCombat = not db.inCombat; status()
+  elseif cmd == "on" then
+    db.enabled = true; schedule(); status()
+  elseif cmd == "off" then
+    db.enabled = false; schedule(); status()
   elseif cmd == "status" then
     status()
   else
@@ -163,15 +203,33 @@ SlashCmdList.BRRRAAAAPPP = function(input)
   end
 end
 
-local frame = CreateFrame("Frame")
-frame:RegisterEvent("ADDON_LOADED")
-frame:SetScript("OnEvent", function(self, event, name)
+-- Loading -----------------------------------------------------------------
+
+-- Settings from older (Dutch) versions.
+local function migrate(saved)
+  if (saved.version or 0) < 2 then
+    if saved.zin ~= nil then saved.chatLine = saved.zin end
+    if saved.rook ~= nil then saved.smoke = saved.rook end
+    saved.zin, saved.rook = nil, nil
+    saved.emote = nil -- used to mean the built-in /fart emote; now the /e emote (default on)
+  end
+  saved.version = DB_VERSION
+end
+
+local loader = CreateFrame("Frame")
+loader:RegisterEvent("ADDON_LOADED")
+loader:SetScript("OnEvent", function(self, event, name)
   if name ~= ADDON then return end
   BrrraaaapppDB = BrrraaaapppDB or {}
+  migrate(BrrraaaapppDB)
   for k, v in pairs(DEFAULTS) do
-    if BrrraaaapppDB[k] == nil then BrrraaaapppDB[k] = v end
+    if BrrraaaapppDB[k] == nil then
+      BrrraaaapppDB[k] = type(v) == "table" and {} or v
+    end
   end
   db = BrrraaaapppDB
+  ns.db = db
   schedule()
+  if ns.ScheduleOthers then ns.ScheduleOthers() end
   self:UnregisterEvent("ADDON_LOADED")
 end)

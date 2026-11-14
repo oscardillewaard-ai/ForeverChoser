@@ -2,7 +2,7 @@
 
 **Summary** (CurseForge's short description field):
 
-> The most immersive addon in Azeroth. Your character farts. So does everyone else. Directional sound, brown smoke, and gross race and class flavor text.
+> The most immersive addon in Azeroth. Your character farts. So does everyone else, in directional surround sound. Brown smoke, and almost 300 gross lines that know your race, class and zone.
 
 ---
 
@@ -26,7 +26,17 @@ But something was missing. Something deeply, fundamentally *real*.
 
 🎭 **Share it with the world (optional).** The gross line goes out as a real `/e` emote, so everyone nearby reads *"Owa Tanka farts, and their tail swishes the stench around so nobody misses out."* You can switch this off with one click if you value your guild membership; then only you see it.
 
-🗺️ **Nobody is innocent.** Other characters fart too: players and NPCs around you, your group, your target, even your own pet. Close by it's loud, far away it's a faint toot, and your group members fart from the right direction: the warrior on your left farts in your left ear. With nameplates on, a small brown cloud rises above whoever did it. True 3D stink. Only you hear and see this, so you can quietly judge everyone.
+🗺️ **Nobody is innocent.** Other characters fart too: players and NPCs around you, your group, your target, even your own pet. With nameplates on, a small brown cloud rises above whoever did it, and follows them as they try to walk away from it. Only you hear and see this, so you can quietly judge everyone.
+
+🎧 **Directional Farts™.** This is where it gets serious. Brrraaaappp knows where your group members are standing and which way you're facing:
+
+- The warrior on your **left** farts in your **left ear**.
+- The healer on your **right** gets your **right ear**.
+- Turn around, and the fart turns with you.
+- Someone **behind you**? It comes from the middle, like a sneak attack.
+- **Close by** it's a full-blown trumpet. **Far away** it's a faint, distant toot carried on the wind. Over 40 yards away? You're safe. For now.
+
+It works with headphones, it works with speakers, it works with your soul. Grab a headset, form a group, and experience the first fully positional flatulence system in Azeroth. True 3D stink.
 
 👋 **Nice to meet you.** Every character you run into has a small chance to greet you the only way they know how, a few seconds after you meet. You set how likely that is.
 
@@ -46,10 +56,16 @@ But something was missing. Something deeply, fundamentally *real*.
 ## FAQ
 
 **Can other players hear my farts?**
-No. Addons can't send sound to other players. Only the optional `/e` emote is visible to others. The smoke and the gross lines are just for you.
+No. Addons can't send sound to other players. What they *can* see is the `/e` emote with your gross line, if you leave it on. The sound and the smoke are just for you.
 
 **Do I need nameplates?**
-No. Brrraaaappp also finds your group, your target, your pet and anyone chatting near you. Press `V` to turn nameplates on and it finds even more of them, and everyone with a nameplate gets their own little cloud. Your group members always sound from the right direction (outside instances).
+No. Brrraaaappp also finds your group, your target, your pet and anyone chatting near you. Press `V` to turn nameplates on and it finds even more of them, and everyone with a nameplate gets their own little cloud.
+
+**Why does only my group fart in stereo?**
+WoW tells addons where your group members are, but not where strangers are standing. So your group gets Directional Farts™ (outside instances), and everyone else farts from the middle, louder or quieter depending on how close they are. Find some friends. It's worth it.
+
+**Why does my emote sometimes appear a few seconds after the fart?**
+WoW only lets addons send chat right after you press a key or click. So the emote of an automatic fart goes out the moment you next move, jump or click. Think of it as a delayed reaction. The smell always arrives later anyway.
 
 **It's been five minutes and nothing happened!**
 Patience. A good fart can't be rushed. By default it comes every 10 to 30 minutes. Check `/brap status`, or set a shorter wait in `/brap`.

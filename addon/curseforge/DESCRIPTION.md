@@ -56,24 +56,31 @@ It works with headphones, it works with speakers, it works with your soul. Grab 
 ## FAQ
 
 **Can other players hear my farts?**
+
 No. Addons can't send sound to other players. What they *can* see is the `/e` emote with your gross line, if you leave it on. The sound and the smoke are just for you.
 
 **Do I need nameplates?**
+
 No. Brrraaaappp also finds your group, your target, your pet and anyone chatting near you. Press `V` to turn nameplates on and it finds even more of them, and everyone with a nameplate gets their own little cloud.
 
 **Why does only my group fart in stereo?**
+
 WoW tells addons where your group members are, but not where strangers are standing. So your group gets Directional Farts™ (outside instances), and everyone else farts from the middle, louder or quieter depending on how close they are. Find some friends. It's worth it.
 
 **Why does my emote sometimes appear a few seconds after the fart?**
+
 WoW only lets addons send chat right after you press a key or click. So the emote of an automatic fart goes out the moment you next move, jump or click. Think of it as a delayed reaction. The smell always arrives later anyway.
 
 **It's been five minutes and nothing happened!**
+
 Patience. A good fart can't be rushed. By default it comes every 10 to 30 minutes. Check `/brap status`, or set a shorter wait in `/brap`.
 
 **Is this lore-friendly?**
+
 Thrall has a digestive system. Checkmate.
 
 **How do I add my own sounds?**
+
 Create the folder `Interface\AddOns\BrrraaaapppCustom\` (so updates don't delete your files), put your `.ogg`/`.mp3` files in it, restart WoW, then add the file name in `/brap`.
 
 ## Credits

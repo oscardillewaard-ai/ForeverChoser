@@ -177,7 +177,8 @@ local function flushEmote()
   end
   lastEmote = GetTime()
   -- C_ChatInfo.SendChatMessage is the current API; the old global is a fallback
-  local send = (C_ChatInfo and C_ChatInfo.SendChatMessage) or _G["SendChatMessage"]
+  ---@diagnostic disable-next-line: deprecated
+  local send = (C_ChatInfo and C_ChatInfo.SendChatMessage) or SendChatMessage
   send(line, "EMOTE")
 end
 ns.FlushEmote = flushEmote

@@ -1,5 +1,5 @@
 -- Brrraaaappp: settings window. Open with /brap, or via the game's AddOns options.
-local ADDON, ns = ...
+local _, ns = ...
 
 local panel
 local refreshers = {}
@@ -317,14 +317,11 @@ local function registerBlizzardOptions()
   b:SetText("Open settings")
   b:SetScript("OnClick", function()
     if SettingsPanel and SettingsPanel:IsShown() then HideUIPanel(SettingsPanel) end
-    if InterfaceOptionsFrame and InterfaceOptionsFrame:IsShown() then InterfaceOptionsFrame:Hide() end
     ns.ShowOptions()
   end)
   if Settings and Settings.RegisterCanvasLayoutCategory then
     local category = Settings.RegisterCanvasLayoutCategory(p, "Brrraaaappp")
     Settings.RegisterAddOnCategory(category)
-  elseif InterfaceOptions_AddCategory then
-    InterfaceOptions_AddCategory(p)
   end
 end
 pcall(registerBlizzardOptions)

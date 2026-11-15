@@ -135,9 +135,10 @@ local function otherFart(c, manual)
     local dist, mapPan
     if c.source == "group" then dist, mapPan = mapInfo(c.unit) end
     if dist then
-      tier = tierFromDistance(dist)
-      if not tier then return false end
-      pan = mapPan
+      local t = tierFromDistance(dist)
+      if not t then return false end
+      tier = t
+      pan = mapPan or 0
     else
       tier = roughTier(c.unit)
     end
@@ -243,8 +244,8 @@ local function remember(guid, name, tier)
   recent[guid] = { name = name, t = now, tier = tier }
   if ns.Meet then
     ns.Meet(guid, function()
-      local r = recent[guid]
-      if r then return { guid = guid, name = r.name, tier = r.tier, source = "heard" } end
+      local entry = recent[guid]
+      if entry then return { guid = guid, name = entry.name, tier = entry.tier, source = "heard" } end
     end)
   end
 end
@@ -255,7 +256,7 @@ local watcher = CreateFrame("Frame")
 watcher:RegisterEvent("CHAT_MSG_SAY")
 watcher:RegisterEvent("CHAT_MSG_EMOTE")
 watcher:RegisterEvent("CHAT_MSG_TEXT_EMOTE")
-watcher:SetScript("OnEvent", function(_, event, ...)
+watcher:SetScript("OnEvent", function(_, _, ...)
   if not ns.db or not ns.db.others then return end
   -- /say and emotes only reach about 25-60 yards: medium volume
   local _, sender = ...

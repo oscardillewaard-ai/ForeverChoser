@@ -176,7 +176,9 @@ local function flushEmote()
     return
   end
   lastEmote = GetTime()
-  SendChatMessage(line, "EMOTE")
+  -- C_ChatInfo.SendChatMessage is the current API; the old global is a fallback
+  local send = (C_ChatInfo and C_ChatInfo.SendChatMessage) or _G["SendChatMessage"]
+  send(line, "EMOTE")
 end
 ns.FlushEmote = flushEmote
 
@@ -335,7 +337,7 @@ end)
 
 local loader = CreateFrame("Frame")
 loader:RegisterEvent("ADDON_LOADED")
-loader:SetScript("OnEvent", function(self, event, name)
+loader:SetScript("OnEvent", function(self, _, name)
   if name ~= ADDON then return end
   BrrraaaapppDB = BrrraaaapppDB or {}
   migrate(BrrraaaapppDB)
